@@ -1,0 +1,256 @@
+:root {
+  --primary: #4f46e5;
+  --primary-dark: #4338ca;
+  --secondary: #10b981;
+  --danger: #ef4444;
+  --danger-dark: #dc2626;
+  --light: #f9fafb;
+  --dark: #111827;
+  --gray: #6b7280;
+  --light-gray: #e5e7eb;
+  --lighter-gray: #f3f4f6;
+  --white: #ffffff;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --border-radius: 0.5rem;
+}
+
+/* Add Product Form */
+.add-products {
+  padding: 2rem;
+  background-color: var(--white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 3rem;
+  border: 1px solid var(--light-gray);
+}
+
+.add-products .heading {
+  font-size: 1.8rem;
+  color: var(--dark);
+  margin-bottom: 2rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--light-gray);
+  position: relative;
+}
+
+.add-products .heading::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100px;
+  height: 2px;
+  background-color: var(--primary);
+}
+
+.add-products form {
+  width: 100%;
+}
+
+.add-products .flex {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.add-products .inputBox {
+  margin-bottom: 1rem;
+}
+
+.add-products .inputBox span {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--dark);
+}
+
+.add-products .inputBox span::after {
+  content: ' *';
+  color: var(--danger);
+}
+
+.add-products .box {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--light-gray);
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  color: var(--dark);
+  background-color: var(--lighter-gray);
+  transition: var(--transition);
+}
+
+.add-products .box:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+  background-color: var(--white);
+}
+
+.add-products textarea.box {
+  min-height: 150px;
+  resize: vertical;
+}
+
+.add-products .btn {
+  width: 100%;
+  padding: 1rem;
+  background-color: var(--primary);
+  color: var(--white);
+  border: none;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-top: 1rem;
+}
+
+.add-products .btn:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Show Products Section */
+.show-products {
+  padding: 2rem;
+  background-color: var(--white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--light-gray);
+}
+
+.show-products .heading {
+  font-size: 1.8rem;
+  color: var(--dark);
+  margin-bottom: 2rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--light-gray);
+  position: relative;
+}
+
+.show-products .heading::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100px;
+  height: 2px;
+  background-color: var(--primary);
+}
+
+.show-products .box-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.show-products .box {
+  background-color: var(--white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--light-gray);
+  overflow: hidden;
+  transition: var(--transition);
+  position: relative;
+}
+
+.show-products .box:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-light);
+}
+
+.show-products .box img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-bottom: 1px solid var(--light-gray);
+}
+
+.show-products .box .name {
+  padding: 1rem 1rem 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.show-products .box .price {
+  padding: 0 1rem;
+  font-size: 1.25rem;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.show-products .box .price span {
+  font-weight: 600;
+}
+
+.show-products .box .details {
+  padding: 0.75rem 1rem;
+  color: var(--gray);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.show-products .flex-btn {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-top: 1px solid var(--light-gray);
+}
+
+.show-products .option-btn,
+.show-products .delete-btn {
+  flex: 1;
+  text-align: center;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: var(--transition);
+  text-decoration: none;
+}
+
+.show-products .option-btn {
+  background-color: var(--primary);
+  color: var(--white);
+}
+
+.show-products .option-btn:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-2px);
+}
+
+.show-products .delete-btn {
+  background-color: var(--danger);
+  color: var(--white);
+}
+
+.show-products .delete-btn:hover {
+  background-color: var(--danger-dark);
+  transform: translateY(-2px);
+}
+
+.show-products .empty {
+  text-align: center;
+  grid-column: 1/-1;
+  padding: 3rem;
+  color: var(--gray);
+  font-size: 1.1rem;
+  background-color: var(--lighter-gray);
+  border-radius: var(--border-radius);
+}

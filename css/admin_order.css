@@ -1,0 +1,134 @@
+/* Orders Section */
+.orders {
+    padding: 2rem 0;
+    background-color: #f8f9fa;
+}
+
+/* Heading Style */
+.orders .heading {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #212529;
+    position: relative;
+    padding-bottom: 0.5rem;
+}
+
+.orders .heading::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #0d6efd, #0dcaf0);
+}
+
+/* Card Container */
+.orders .card {
+    border: none;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+/* Table Styles */
+.orders .table-dark {
+    background: linear-gradient(135deg, #212529, #343a40);
+    color: white;
+}
+
+.orders .table-dark th {
+    padding: 1rem;
+    font-weight: 500;
+    border: none;
+}
+
+.orders table td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-top: 1px solid #dee2e6;
+}
+
+.orders .table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+/* Status Badges */
+.orders .badge {
+    padding: 0.35rem 0.65rem;
+    font-weight: 500;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    text-transform: capitalize;
+}
+
+.orders .bg-success {
+    background-color: #198754 !important;
+}
+
+.orders .bg-warning {
+    background-color: #ffc107 !important;
+    color: #212529;
+}
+
+/* Action Buttons */
+.orders .btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: 0.25rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.orders .btn-sm {
+    padding: 0.25rem 0.5rem;
+}
+
+.orders .btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.orders .form-select {
+    padding: 0.25rem 1.75rem 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
+
+/* Customer Info */
+.orders .text-muted {
+    color: #6c757d !important;
+    font-size: 0.8rem;
+}
+
+/* Empty State */
+.orders .text-center {
+    padding: 2rem;
+    color: #6c757d;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .orders .heading {
+        font-size: 1.5rem;
+    }
+    
+    .orders table td, 
+    .orders .table-dark th {
+        padding: 0.75rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .orders .d-flex.gap-2 {
+        flex-direction: column;
+        gap: 0.5rem !important;
+    }
+    
+    .orders .form-select,
+    .orders .btn {
+        width: 100%;
+    }
+}

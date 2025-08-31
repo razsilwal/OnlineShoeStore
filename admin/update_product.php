@@ -117,16 +117,12 @@ if(isset($_POST['update'])){
    <form action="" method="post" enctype="multipart/form-data">
       <input type="hidden" name="pid" value="<?= $fetch_products['id']; ?>">
       <input type="hidden" name="old_image_01" value="<?= $fetch_products['image_01']; ?>">
-      <input type="hidden" name="old_image_02" value="<?= $fetch_products['image_02']; ?>">
-      <input type="hidden" name="old_image_03" value="<?= $fetch_products['image_03']; ?>">
       <div class="image-container">
          <div class="main-image">
             <img src="../uploaded_img/<?= $fetch_products['image_01']; ?>" alt="">
          </div>
          <div class="sub-image">
             <img src="../uploaded_img/<?= $fetch_products['image_01']; ?>" alt="">
-            <img src="../uploaded_img/<?= $fetch_products['image_02']; ?>" alt="">
-            <img src="../uploaded_img/<?= $fetch_products['image_03']; ?>" alt="">
          </div>
       </div>
       <span>update name</span>
@@ -137,10 +133,6 @@ if(isset($_POST['update'])){
       <textarea name="details" class="box" required cols="30" rows="10"><?= $fetch_products['details']; ?></textarea>
       <span>update image 01</span>
       <input type="file" name="image_01" accept="image/jpg, image/jpeg, image/png, image/webp" class="box">
-      <span>update image 02</span>
-      <input type="file" name="image_02" accept="image/jpg, image/jpeg, image/png, image/webp" class="box">
-      <span>update image 03</span>
-      <input type="file" name="image_03" accept="image/jpg, image/jpeg, image/png, image/webp" class="box">
       <div class="flex-btn">
          <input type="submit" name="update" class="btn" value="update">
          <a href="products.php" class="option-btn">go back</a>

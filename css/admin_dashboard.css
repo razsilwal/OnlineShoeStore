@@ -1,0 +1,317 @@
+/* Dashboard Box Container */
+
+/* Dashboard Base Styles */
+.dashboard {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.heading {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 1.5rem;
+    position: relative;
+    display: inline-block;
+}
+
+.heading::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, #4f46e5, #8b5cf6);
+    border-radius: 4px;
+}
+
+/* Clock Styles */
+.clock {
+    background: #ffffff;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    display: inline-block;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+    font-weight: 500;
+    color: #4f46e5;
+}
+
+/* Box Container */
+.box-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Individual Boxes */
+.box {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.75rem;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    border: 1px solid #e2e8f0;
+    position: relative;
+    overflow: hidden;
+}
+
+.box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    border-color: #c7d2fe;
+}
+
+/* Welcome Box Special Styling */
+.box:first-child {
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+    color: white;
+    grid-column: 1 / -1;
+    text-align: left;
+}
+
+/* Box Content */
+.box h3 {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.box:first-child h3 {
+    font-size: 2rem;
+    color: white;
+}
+
+.box p {
+    color: #64748b;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.box:first-child p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.box h3 span {
+    color: #4f46e5;
+    font-weight: 500;
+}
+
+.box:first-child h3 span {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: #4f46e5;
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background: #4338ca;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(79, 70, 229, 0.2);
+}
+
+.box:first-child .btn {
+    background: white;
+    color: #4f46e5;
+}
+
+.box:first-child .btn:hover {
+    background: #f1f5f9;
+}
+
+/* Decorative Elements */
+.box::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #4f46e5, #8b5cf6);
+}
+
+.box:first-child::after {
+    background: linear-gradient(90deg, #a5b4fc, #c7d2fe);
+    height: 6px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .box:first-child {
+        grid-column: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard {
+        padding: 1.5rem;
+    }
+    
+    .box-container {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1rem;
+    }
+    
+    .box h3 {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .box-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .box:first-child {
+        text-align: center;
+    }
+    
+    .box:first-child .btn {
+        margin: 0 auto;
+    }
+}
+
+/* ===== Individual Chart Containers ===== */
+.chart-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 
+    0 1px 2px rgba(0,0,0,0.05),
+    0 4px 12px rgba(0,0,0,0.03);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #e2e8f0;
+}
+
+.chart-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 2px 4px rgba(0,0,0,0.05),
+    0 8px 16px rgba(0,0,0,0.05);
+}
+
+/* ===== Chart Headers ===== */
+.chart-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+  padding: 20px 20px 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.chart-title::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 18px;
+  background: #4f46e5;
+  border-radius: 2px;
+  margin-right: 10px;
+}
+
+/* ===== Chart Controls ===== */
+.chart-controls {
+  display: flex;
+  gap: 8px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.chart-controls button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chart-controls button:hover {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.chart-controls button.active {
+  background: #4f46e5;
+  color: white;
+  box-shadow: 0 1px 2px rgba(79, 70, 229, 0.2);
+}
+
+/* ===== Chart Canvas Container ===== */
+.chart-holder {
+  padding: 16px 20px 24px;
+  height: 300px;
+  position: relative;
+}
+
+/* ===== Pie Chart Specific Styles ===== */
+.chart-container:nth-child(2) .chart-title::before {
+  background: #ec4899;
+}
+
+.chart-container:nth-child(2) .chart-controls button.active {
+  background: #ec4899;
+}
+
+/* ===== Responsive Adjustments ===== */
+@media (max-width: 768px) {
+  .charts-wrapper {
+    padding: 16px;
+    gap: 16px;
+  }
+  
+  .chart-holder {
+    height: 240px;
+    padding: 12px 16px 20px;
+  }
+  
+  .chart-title {
+    font-size: 16px;
+    padding: 16px 16px 0;
+  }
+  
+  .chart-controls {
+    padding: 8px 16px;
+  }
+}
+
+/* ===== Canvas Overrides ===== */
+canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ===== Empty State (if needed) ===== */
+.chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+

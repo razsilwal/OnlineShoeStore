@@ -48,302 +48,303 @@ if(isset($_POST['update_qty'])){
 
    <!-- custom css file link  -->
    <link rel="stylesheet" href="css/style.css">
+   
+   <link rel="stylesheet" href="css/cart.css">
+<style>
+   /* Shopping Cart Section */
+.shopping-cart {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
 
-   <style>
-      :root {
-         --primary: #ff9900;
-         --primary-dark: #ff8c00;
-         --secondary: #232f3e;
-         --light: #f7f7f7;
-         --dark: #131921;
-         --gray: #ddd;
-         --text: #333;
-         --text-light: #555;
-      }
-      
-      body {
-         font-family: 'Poppins', sans-serif;
-         background-color: #f5f5f5;
-         color: var(--text);
-      }
-      
-      .shopping-cart {
-         max-width: 1200px;
-         margin: 0 auto;
-         padding: 2rem 1rem;
-      }
-      
-      .cart-header {
-         display: flex;
-         justify-content: space-between;
-         align-items: center;
-         margin-bottom: 2rem;
-         padding-bottom: 1rem;
-         border-bottom: 1px solid var(--gray);
-      }
-      
-      .cart-header h3 {
-         font-size: 2.2rem;
-         font-weight: 600;
-         color: var(--secondary);
-         margin: 0;
-      }
-      
-      .item-count {
-         color: var(--text-light);
-         font-size: 1.1rem;
-      }
-      
-      .cart-container {
-         display: flex;
-         gap: 2rem;
-         align-items: flex-start;
-      }
-      
-      .cart-items {
-         flex: 1 1 70%;
-         background: white;
-         border-radius: 8px;
-         box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-         padding: 1.5rem;
-      }
-      
-      .cart-summary {
-         flex: 1 1 30%;
-         background: white;
-         border-radius: 8px;
-         box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-         padding: 1.5rem;
-         position: sticky;
-         top: 1rem;
-      }
-      
-      .cart-item {
-         display: flex;
-         gap: 1.5rem;
-         padding: 1.5rem 0;
-         border-bottom: 1px solid #f0f0f0;
-      }
-      
-      .cart-item:last-child {
-         border-bottom: none;
-      }
-      
-      .cart-item-img {
-         width: 120px;
-         height: 120px;
-         object-fit: contain;
-         border-radius: 4px;
-         border: 1px solid #f0f0f0;
-         padding: 0.5rem;
-      }
-      
-      .cart-item-details {
-         flex: 1;
-      }
-      
-      .cart-item-title {
-         font-size: 1.1rem;
-         font-weight: 500;
-         margin-bottom: 0.5rem;
-         color: var(--text);
-      }
-      
-      .cart-item-title:hover {
-         color: var(--primary);
-      }
-      
-      .cart-item-price {
-         font-size: 1.2rem;
-         font-weight: 600;
-         color: var(--text);
-         margin-bottom: 0.5rem;
-      }
-      
-      .cart-item-actions {
-         display: flex;
-         flex-direction: column;
-         align-items: flex-end;
-         min-width: 150px;
-      }
-      
-      .qty-control {
-         display: flex;
-         align-items: center;
-         gap: 0.5rem;
-         margin-bottom: 1rem;
-      }
-      
-      .qty-control input {
-         width: 60px;
-         text-align: center;
-         padding: 0.5rem;
-         border: 1px solid var(--gray);
-         border-radius: 4px;
-         font-size: 1rem;
-      }
-      
-      .update-btn {
-         background: none;
-         border: none;
-         color: var(--primary);
-         cursor: pointer;
-         font-size: 1rem;
-      }
-      
-      .update-btn:hover {
-         color: var(--primary-dark);
-      }
-      
-      .delete-btn {
-         background: none;
-         border: none;
-         color: #ff4d4d;
-         cursor: pointer;
-         font-size: 0.9rem;
-         display: flex;
-         align-items: center;
-         gap: 0.3rem;
-      }
-      
-      .delete-btn:hover {
-         color: #e60000;
-         text-decoration: underline;
-      }
-      
-      .sub-total {
-         font-size: 1.1rem;
-         font-weight: 500;
-         color: var(--text);
-         margin-bottom: 1rem;
-      }
-      
-      .summary-title {
-         font-size: 1.3rem;
-         font-weight: 600;
-         margin-bottom: 1.5rem;
-         color: var(--secondary);
-         padding-bottom: 1rem;
-         border-bottom: 1px solid #f0f0f0;
-      }
-      
-      .summary-details {
-         margin-bottom: 1.5rem;
-      }
-      
-      .summary-row {
-         display: flex;
-         justify-content: space-between;
-         margin-bottom: 0.8rem;
-      }
-      
-      .summary-label {
-         color: var(--text-light);
-      }
-      
-      .summary-value {
-         font-weight: 500;
-      }
-      
-      .grand-total {
-         font-size: 1.2rem;
-         font-weight: 600;
-         padding: 1rem 0;
-         border-top: 1px solid #f0f0f0;
-         border-bottom: 1px solid #f0f0f0;
-         margin: 1rem 0;
-      }
-      
-      .checkout-btn {
-         background-color: var(--primary);
-         color: white;
-         border: none;
-         padding: 0.8rem;
-         border-radius: 4px;
-         font-size: 1rem;
-         font-weight: 500;
-         cursor: pointer;
-         width: 100%;
-         text-align: center;
-         transition: background 0.3s;
-         margin-bottom: 1rem;
-      }
-      
-      .checkout-btn:hover {
-         background-color: var(--primary-dark);
-      }
-      
-      .secondary-btn {
-         background-color: white;
-         color: var(--text);
-         border: 1px solid var(--gray);
-         padding: 0.8rem;
-         border-radius: 4px;
-         font-size: 1rem;
-         font-weight: 500;
-         cursor: pointer;
-         width: 100%;
-         text-align: center;
-         transition: all 0.3s;
-      }
-      
-      .secondary-btn:hover {
-         background-color: #f7f7f7;
-         border-color: #ccc;
-      }
-      
-      .empty-cart {
-         text-align: center;
-         padding: 3rem 0;
-      }
-      
-      .empty-cart-icon {
-         font-size: 5rem;
-         color: #ccc;
-         margin-bottom: 1rem;
-      }
-      
-      .empty-cart-text {
-         font-size: 1.2rem;
-         color: var(--text-light);
-         margin-bottom: 1.5rem;
-      }
-      
-      .shop-now-btn {
-         background-color: var(--primary);
-         color: white;
-         padding: 0.8rem 2rem;
-         border-radius: 4px;
-         text-decoration: none;
-         font-weight: 500;
-         display: inline-block;
-      }
-      
-      .shop-now-btn:hover {
-         background-color: var(--primary-dark);
-      }
-      
-      @media (max-width: 768px) {
-         .cart-container {
-            flex-direction: column;
-         }
-         
-         .cart-items, .cart-summary {
-            width: 100%;
-         }
-         
-         .cart-item {
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-         }
-         
-         .cart-item-actions {
-            align-items: center;
-            margin-top: 1rem;
-         }
-      }
-   </style>
+.cart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.cart-header h3 {
+    font-size: 1.8rem;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.item-count {
+    background: #f8f9fa;
+    color: #6c757d;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.cart-container {
+    display: flex;
+    gap: 2rem;
+    flex-direction: column;
+}
+
+@media (min-width: 992px) {
+    .cart-container {
+        flex-direction: row;
+    }
+}
+
+.cart-items {
+    flex: 2;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+}
+
+.cart-item {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+    border-bottom: 1px solid #f0f0f0;
+    align-items: center;
+}
+
+.cart-item:last-child {
+    border-bottom: none;
+}
+
+.cart-item-img {
+    width: 120px;
+    height: 120px;
+    object-fit: contain;
+    border-radius: 5px;
+    background: #f8f9fa;
+    padding: 0.5rem;
+}
+
+.cart-item-details {
+    flex: 1;
+    min-width: 200px;
+}
+
+.cart-item-title {
+    font-size: 1.1rem;
+    color: #2c3e50;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    display: block;
+    text-decoration: none;
+}
+
+.cart-item-title:hover {
+    color: #3498db;
+}
+
+.cart-item-price {
+    font-size: 1.1rem;
+    color: #27ae60;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.cart-item-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 200px;
+}
+
+.qty-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.qty-control label {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.qty {
+    width: 60px;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.update-btn {
+    background: #f8f9fa;
+    border: none;
+    color: #6c757d;
+    padding: 0.5rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.update-btn:hover {
+    background: #e9ecef;
+    color: #2c3e50;
+}
+
+.sub-total {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.delete-btn {
+    background: #fff5f5;
+    color: #e74c3c;
+    border: 1px solid #ffdddd;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.delete-btn:hover {
+    background: #ffecec;
+}
+
+/* Empty Cart Styles */
+.empty-cart {
+    text-align: center;
+    padding: 3rem 0;
+}
+
+.empty-cart-icon {
+    font-size: 3rem;
+    color: #bdc3c7;
+    margin-bottom: 1rem;
+}
+
+.empty-cart h3 {
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.empty-cart-text {
+    color: #7f8c8d;
+    margin-bottom: 1.5rem;
+}
+
+.shop-now-btn {
+    background: #3498db;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 5px;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.shop-now-btn:hover {
+    background: #2980b9;
+}
+
+/* Cart Summary Styles */
+.cart-summary {
+    flex: 1;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    height: fit-content;
+}
+
+.summary-title {
+    font-size: 1.3rem;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.summary-details {
+    margin-bottom: 1.5rem;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.summary-label {
+    color: #6c757d;
+}
+
+.summary-value {
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.grand-total {
+    padding: 1rem 0;
+    border-top: 1px solid #f0f0f0;
+    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 1.5rem;
+}
+
+.grand-total .summary-row {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #27ae60;
+}
+
+.checkout-btn {
+    background: #27ae60;
+    color: white;
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.checkout-btn:hover {
+    background: #219653;
+}
+
+.checkout-btn.disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+}
+
+.secondary-btn {
+    background: #3498db;
+    color: white;
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.secondary-btn:hover {
+    background: #2980b9;
+}
+</style>
+   
 </head>
 <body>
    
@@ -378,9 +379,9 @@ if(isset($_POST['update_qty'])){
             
             <div class="cart-item-details">
                <a href="quick_view.php?pid=<?= $fetch_cart['pid']; ?>" class="cart-item-title"><?= $fetch_cart['name']; ?></a>
-               <div class="cart-item-price">₹<?= number_format($fetch_cart['price'], 2); ?></div>
+               <div class="cart-item-price">Rs. <?= number_format($fetch_cart['price'], 2); ?></div>
                <div>In stock</div>
-               <div>Eligible for FREE Shipping</div>
+               <div>FREE Shipping</div>
             </div>
             
             <div class="cart-item-actions">
@@ -392,7 +393,7 @@ if(isset($_POST['update_qty'])){
                   </button>
                </div>
                
-               <div class="sub-total">Subtotal: ₹<?= number_format($sub_total, 2); ?></div>
+               <div class="sub-total">Subtotal: Rs. <?= number_format($sub_total, 2); ?></div>
                
                <button type="submit" onclick="return confirm('Delete this item from cart?');" class="delete-btn" name="delete">
                   <i class="fas fa-trash"></i> Remove
@@ -423,7 +424,7 @@ if(isset($_POST['update_qty'])){
          <div class="summary-details">
             <div class="summary-row">
                <span class="summary-label">Subtotal (<?= $item_count ?> item<?= $item_count != 1 ? 's' : '' ?>):</span>
-               <span class="summary-value">₹<?= number_format($grand_total, 2); ?></span>
+               <span class="summary-value">NRs. <?= number_format($grand_total, 2); ?></span>
             </div>
             <div class="summary-row">
                <span class="summary-label">Delivery:</span>
@@ -434,7 +435,7 @@ if(isset($_POST['update_qty'])){
          <div class="grand-total">
             <div class="summary-row">
                <span>Total:</span>
-               <span>₹<?= number_format($grand_total, 2); ?></span>
+               <span>Rs. <?= number_format($grand_total, 2); ?></span>
             </div>
          </div>
          
@@ -443,7 +444,7 @@ if(isset($_POST['update_qty'])){
          </a>
          
          <a href="shop.php" class="secondary-btn">
-            Continue Shopping
+            Add other product
          </a>
          
          <a href="cart.php?delete_all" class="delete-btn" onclick="return confirm('Delete all items from cart?');" style="justify-content: center; margin-top: 1rem;">

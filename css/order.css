@@ -1,0 +1,467 @@
+:root {
+         --primary: #2563eb;
+         --primary-dark: #1d4ed8;
+         --success: #10b981;
+         --warning: #f59e0b;
+         --danger: #ef4444;
+         --light: #f8fafc;
+         --light-gray: #f1f5f9;
+         --gray: #94a3b8;
+         --dark: #1e293b;
+         --dark-gray: #64748b;
+         --radius-sm: 8px;
+         --radius-md: 12px;
+         --transition: all 0.3s ease;
+      }
+      
+      * {
+         margin: 0;
+         padding: 0;
+         box-sizing: border-box;
+         font-family: 'Poppins', sans-serif;
+      }
+      
+      body {
+         background-color: var(--light);
+         color: var(--dark);
+         line-height: 1.6;
+      }
+      
+      /* Header Styles */
+      .header {
+         background-color: white;
+         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+         position: sticky;
+         top: 0;
+         z-index: 1000;
+         padding: 1rem 0;
+      }
+      
+      .flex {
+         display: flex;
+         align-items: center;
+         justify-content: space-between;
+         gap: 1.5rem;
+      }
+      
+      .container {
+         max-width: 1200px;
+         margin: 0 auto;
+         padding: 0 1.5rem;
+      }
+      
+      .logo {
+         font-size: 2rem;
+         font-weight: 700;
+         color: var(--primary);
+         text-decoration: none;
+      }
+      
+      .logo span {
+         color: var(--dark);
+      }
+      
+      .navbar a {
+         color: var(--dark);
+         text-decoration: none;
+         font-size: 1.1rem;
+         font-weight: 500;
+         padding: 0.5rem 1rem;
+         transition: var(--transition);
+         border-radius: var(--radius-sm);
+      }
+      
+      .navbar a:hover {
+         color: var(--primary);
+         background: var(--light-gray);
+      }
+      
+      .icons a, .icons div {
+         font-size: 1.5rem;
+         color: var(--dark);
+         margin-left: 1.5rem;
+         cursor: pointer;
+         transition: var(--transition);
+      }
+      
+      .icons a:hover, .icons div:hover {
+         color: var(--primary);
+      }
+      
+      #menu-btn {
+         display: none;
+      }
+      
+      .account-box {
+         position: absolute;
+         top: 120%;
+         right: 2rem;
+         background: white;
+         box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+         border-radius: var(--radius-md);
+         padding: 1.5rem;
+         text-align: center;
+         width: 250px;
+         display: none;
+      }
+      
+      .account-box.active {
+         display: block;
+      }
+      
+      .account-box p {
+         margin-bottom: 1rem;
+         font-size: 1.1rem;
+         color: var(--dark-gray);
+      }
+      
+      .account-box p span {
+         color: var(--primary);
+         font-weight: 600;
+      }
+      
+      .account-box a {
+         display: block;
+         padding: 0.8rem;
+         margin: 0.5rem 0;
+         background: var(--light-gray);
+         color: var(--dark);
+         border-radius: var(--radius-sm);
+         transition: var(--transition);
+      }
+      
+      .account-box a:hover {
+         background: var(--primary);
+         color: white;
+      }
+      
+      /* Main Content */
+      .orders-section {
+         padding: 3rem 1rem 5rem;
+      }
+      
+      .orders-header {
+         margin-bottom: 2rem;
+         text-align: center;
+      }
+      
+      .orders-title {
+         font-size: 2rem;
+         font-weight: 700;
+         color: var(--dark);
+         margin: 0;
+         position: relative;
+         display: inline-block;
+      }
+      
+      .orders-title::after {
+         content: '';
+         position: absolute;
+         bottom: -8px;
+         left: 50%;
+         transform: translateX(-50%);
+         width: 60px;
+         height: 4px;
+         background: var(--primary);
+         border-radius: 2px;
+      }
+      
+      .orders-container {
+         display: grid;
+         grid-template-columns: 1fr;
+         gap: 1.5rem;
+      }
+      
+      .order-card {
+         background-color: white;
+         border-radius: var(--radius-md);
+         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+         padding: 1.5rem;
+         transition: var(--transition);
+      }
+      
+      .order-card:hover {
+         transform: translateY(-3px);
+         box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+      }
+      
+      .order-header {
+         display: flex;
+         justify-content: space-between;
+         align-items: center;
+         margin-bottom: 1rem;
+         padding-bottom: 1rem;
+         border-bottom: 1px solid #e2e8f0;
+      }
+      
+      .order-id {
+         font-weight: 600;
+         color: var(--primary);
+         font-size: 1.1rem;
+      }
+      
+      .order-date {
+         color: var(--dark-gray);
+         font-size: 0.9rem;
+      }
+      
+      .order-details {
+         margin-bottom: 1.5rem;
+      }
+      
+      .order-product {
+         margin-bottom: 0.5rem;
+         font-size: 1rem;
+      }
+      
+      .order-price {
+         font-weight: 700;
+         font-size: 1.2rem;
+         color: var(--dark);
+         margin: 1rem 0;
+      }
+      
+      .order-status {
+         display: inline-block;
+         padding: 0.5rem 1rem;
+         border-radius: 50px;
+         font-size: 0.9rem;
+         font-weight: 600;
+         margin-bottom: 1rem;
+      }
+      
+      .status-pending {
+         background-color: #fffbeb;
+         color: #d97706;
+      }
+      
+      .status-processing {
+         background-color: #eff6ff;
+         color: #1d4ed8;
+      }
+      
+      .status-shipped {
+         background-color: #ecfdf5;
+         color: #059669;
+      }
+      
+      .status-delivered {
+         background-color: #f0fdf4;
+         color: #16a34a;
+      }
+      
+      .status-cancelled {
+         background-color: #fef2f2;
+         color: #dc2626;
+      }
+      
+      .order-actions {
+         display: flex;
+         gap: 0.75rem;
+         justify-content: flex-end;
+      }
+      
+      .order-btn {
+         padding: 0.6rem 1.2rem;
+         border-radius: var(--radius-sm);
+         font-size: 0.9rem;
+         font-weight: 500;
+         display: inline-flex;
+         align-items: center;
+         gap: 0.5rem;
+         cursor: pointer;
+         transition: var(--transition);
+         border: none;
+      }
+      
+      .order-btn-primary {
+         background-color: var(--primary);
+         color: white;
+      }
+      
+      .order-btn-primary:hover {
+         background-color: var(--primary-dark);
+      }
+      
+      .order-btn-danger {
+         background-color: white;
+         color: var(--danger);
+         border: 1px solid var(--danger);
+      }
+      
+      .order-btn-danger:hover {
+         background-color: #fef2f2;
+      }
+      
+      .empty-orders {
+         text-align: center;
+         padding: 3rem 2rem;
+         background-color: white;
+         border-radius: var(--radius-md);
+         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      }
+      
+      .empty-icon {
+         font-size: 3rem;
+         color: var(--gray);
+         margin-bottom: 1.5rem;
+      }
+      
+      .empty-title {
+         font-size: 1.5rem;
+         font-weight: 600;
+         color: var(--dark);
+         margin-bottom: 1rem;
+      }
+      
+      .empty-description {
+         color: var(--dark-gray);
+         margin-bottom: 2rem;
+      }
+      
+      .empty-action {
+         display: inline-block;
+         padding: 0.8rem 1.5rem;
+         background-color: var(--primary);
+         color: white;
+         border-radius: var(--radius-sm);
+         font-weight: 500;
+         text-decoration: none;
+         transition: var(--transition);
+      }
+      
+      .empty-action:hover {
+         background-color: var(--primary-dark);
+      }
+      
+      .login-prompt {
+         text-align: center;
+         padding: 3rem 2rem;
+         background-color: white;
+         border-radius: var(--radius-md);
+         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      }
+      
+      .login-title {
+         font-size: 1.5rem;
+         font-weight: 600;
+         color: var(--dark);
+         margin-bottom: 1.5rem;
+      }
+      
+      .login-link {
+         color: var(--primary);
+         font-weight: 600;
+         text-decoration: none;
+      }
+      
+      .message {
+         position: fixed;
+         top: 20px;
+         right: 20px;
+         background-color: white;
+         padding: 1rem 1.5rem;
+         border-radius: var(--radius-sm);
+         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+         display: flex;
+         align-items: center;
+         gap: 1rem;
+         z-index: 1000;
+         animation: slideIn 0.3s ease-out;
+      }
+      
+      @keyframes slideIn {
+         from { transform: translateX(100%); opacity: 0; }
+         to { transform: translateX(0); opacity: 1; }
+      }
+      
+      .message i {
+         cursor: pointer;
+      }
+      
+      /* Footer Styles */
+      .footer {
+         background-color: var(--dark);
+         color: white;
+         padding: 3rem 0;
+      }
+      
+      .footer .box-container {
+         display: grid;
+         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+         gap: 2rem;
+      }
+      
+      .footer .box h3 {
+         font-size: 1.5rem;
+         color: white;
+         padding: 1rem 0;
+      }
+      
+      .footer .box a {
+         display: block;
+         font-size: 1.1rem;
+         color: var(--light-gray);
+         padding: 0.5rem 0;
+         transition: var(--transition);
+      }
+      
+      .footer .box a:hover {
+         color: var(--primary);
+         text-decoration: underline;
+      }
+      
+      .footer .credit {
+         text-align: center;
+         margin-top: 2rem;
+         padding-top: 2rem;
+         font-size: 1.2rem;
+         color: var(--light-gray);
+         border-top: 1px solid rgba(255,255,255,0.2);
+      }
+      
+      .footer .credit span {
+         color: var(--primary);
+      }
+      
+      @media (max-width: 768px) {
+         #menu-btn {
+            display: inline-block;
+         }
+         
+         .navbar {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+            transition: var(--transition);
+         }
+         
+         .navbar.active {
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+         }
+         
+         .navbar a {
+            display: block;
+            margin: 1.5rem;
+            padding: 1rem;
+            background: var(--light-gray);
+            border-radius: var(--radius-md);
+         }
+         
+         .account-box {
+            right: 1rem;
+         }
+         
+         .order-actions {
+            flex-direction: column;
+            gap: 0.5rem;
+         }
+         
+         .order-btn {
+            width: 100%;
+            justify-content: center;
+         }
+      }

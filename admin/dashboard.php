@@ -87,226 +87,34 @@ $fetch_profile = $select_profile->fetch(PDO::FETCH_ASSOC);
    <title>Dashboard</title>
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-   <style>
-      :root {
-         --main-color: #2980b9;
-         --secondary-color: #3498db;
-         --success-color: #2ecc71;
-         --warning-color: #f39c12;
-      }
-      
-      * {
-         margin: 0;
-         padding: 0;
-         box-sizing: border-box;
-         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      }
-      
-      body {
-         background-color: #f5f7fa;
-         color: #333;
-      }
-      
-      .dashboard {
-         padding: 20px;
-         max-width: 1400px;
-         margin: 0 auto;
-      }
-      
-      .heading {
-         text-align: center;
-         margin-bottom: 30px;
-         color: var(--main-color);
-         position: relative;
-         display: inline-block;
-         left: 50%;
-         transform: translateX(-50%);
-      }
-      
-      .heading::after {
-         content: '';
-         position: absolute;
-         bottom: -8px;
-         left: 0;
-         width: 100%;
-         height: 3px;
-         background: linear-gradient(90deg, var(--main-color), rgba(0,0,0,0));
-         transform: scaleX(0);
-         transform-origin: left;
-         animation: headingUnderline 1.5s ease-in-out forwards;
-      }
-      
-      .box-container {
-         display: grid;
-         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-         gap: 20px;
-         margin-bottom: 30px;
-      }
-      
-      .box {
-         animation: fadeIn 0.6s ease-out forwards;
-         opacity: 0;
-         background: white;
-         border-radius: 10px;
-         padding: 20px;
-         text-align: center;
-         box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-         transition: all 0.3s ease;
-         position: relative;
-         overflow: hidden;
-      }
-      
-      .box:hover {
-         transform: translateY(-5px);
-         box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-      }
-      
-      .box h3 {
-         font-size: 2rem;
-         margin-bottom: 10px;
-         color: var(--main-color);
-      }
-      
-      .box p {
-         font-size: 1.1rem;
-         color: #666;
-         margin-bottom: 15px;
-      }
-      
-      .btn {
-         display: inline-block;
-         padding: 8px 20px;
-         background: var(--main-color);
-         color: white;
-         border-radius: 5px;
-         text-decoration: none;
-         transition: all 0.3s ease;
-      }
-      
-      .btn:hover {
-         background: var(--secondary-color);
-         transform: scale(1.05);
-      }
-      
-      .status-indicator {
-         display: inline-block;
-         width: 12px;
-         height: 12px;
-         border-radius: 50%;
-         margin-right: 5px;
-      }
-      
-      .status-active {
-         background-color: var(--success-color);
-      }
-      
-      .status-pending {
-         background-color: var(--warning-color);
-      }
-      
-      .charts-wrapper {
-         display: flex;
-         flex-wrap: wrap;
-         gap: 20px;
-         margin-top: 30px;
-      }
-      
-      .chart-container {
-         flex: 1;
-         min-width: 300px;
-         background: white;
-         border-radius: 10px;
-         padding: 20px;
-         box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-      }
-      
-      .chart-title {
-         text-align: center;
-         margin-bottom: 15px;
-         font-size: 1.3rem;
-         color: var(--main-color);
-      }
-      
-      .chart-controls {
-         display: flex;
-         justify-content: center;
-         gap: 10px;
-         margin-bottom: 15px;
-      }
-      
-      .chart-controls button {
-         padding: 5px 15px;
-         background: var(--main-color);
-         color: white;
-         border: none;
-         border-radius: 5px;
-         cursor: pointer;
-         transition: all 0.3s ease;
-      }
-      
-      .chart-controls button:hover {
-         background: var(--secondary-color);
-      }
-      
-      .chart-controls button.active {
-         background: var(--secondary-color);
-      }
-      
-      .chart-holder {
-         width: 100%;
-         height: 300px;
-         position: relative;
-      }
-      
-      #live-clock {
-         margin: 10px 0;
-         font-size: 1rem;
-         color: #666;
-      }
-      
-      @keyframes fadeIn {
-         from { opacity: 0; transform: translateY(20px); }
-         to { opacity: 1; transform: translateY(0); }
-      }
-      
-      @keyframes headingUnderline {
-         to { transform: scaleX(1); }
-      }
-      
-      .box:nth-child(1) { animation-delay: 0.1s; }
-      .box:nth-child(2) { animation-delay: 0.2s; }
-      .box:nth-child(3) { animation-delay: 0.3s; }
-      .box:nth-child(4) { animation-delay: 0.4s; }
-      .box:nth-child(5) { animation-delay: 0.5s; }
-      .box:nth-child(6) { animation-delay: 0.6s; }
-      .box:nth-child(7) { animation-delay: 0.7s; }
-      .box:nth-child(8) { animation-delay: 0.8s; }
-   </style>
+   <link rel="stylesheet" href="../css/admin_dashboard.css">
+
 </head>
 <body>
-<?php include '../components/admin_header.php'; ?>
+<?php include '../components/admin_navbar.php'; ?>
 <section class="dashboard">
    <h1 class="heading">Dashboard</h1>
+   <div class="clock"> <div id="live-clock"></div></div>
 
    <div class="box-container">
       <div class="box">
-         <h3>Welcome!</h3>
+         <h3>Welcome</h3>
          <p><?= htmlspecialchars($fetch_profile['name']); ?></p>
-         <div id="live-clock"></div>
+        
          <a href="update_profile.php" class="btn">Update Profile</a>
       </div>
 
       <div class="box">
-         <h3><span>₹</span><?= number_format($total_pendings); ?><span>/-</span></h3>
+         <h3><span>Rs-</span><?= number_format($total_pendings); ?></h3>
          <p>Total Pendings</p>
-         <span class="status-indicator status-pending"></span>
+         
          <a href="placed_orders.php" class="btn">See Orders</a>
       </div>
 
       <div class="box">
-         <h3><span>₹</span><?= number_format($total_completes); ?><span>/-</span></h3>
+         <h3><span>Rs-</span><?= number_format($total_completes); ?></h3>
          <p>Completed Orders</p>
-         <span class="status-indicator status-active"></span>
+         
          <a href="placed_orders.php" class="btn">See Orders</a>
       </div>
 
@@ -324,26 +132,17 @@ $fetch_profile = $select_profile->fetch(PDO::FETCH_ASSOC);
 
       <div class="box">
          <h3><?= number_format($number_of_users); ?></h3>
-         <p>Normal Users</p>
+         <p>Users</p>
          <a href="users_accounts.php" class="btn">See Users</a>
       </div>
 
-      <div class="box">
-         <h3><?= number_format($number_of_admins); ?></h3>
-         <p>Admin Users</p>
-         <a href="admin_accounts.php" class="btn">See Admins</a>
-      </div>
 
-      <div class="box">
-         <h3><?= number_format($number_of_messages); ?></h3>
-         <p>New Messages</p>
-         <a href="messages.php" class="btn">See Messages</a>
-      </div>
+      
    </div>
 
    <div class="charts-wrapper">
       <div class="chart-container">
-         <div class="chart-title">Monthly Analytics</div>
+         <div class="chart-title">Monthly Analytics of Kickster</div>
          <div class="chart-controls">
             <button class="active" data-type="orders">Orders</button>
             <button data-type="revenue">Revenue</button>
@@ -353,8 +152,9 @@ $fetch_profile = $select_profile->fetch(PDO::FETCH_ASSOC);
             <canvas id="lineChart"></canvas>
          </div>
       </div>
-      <div class="chart-container">
-         <div class="chart-title">Data Distribution</div>
+   </div>
+   <div class="chart-container">
+         <div class="chart-title">Shoes Distribution</div>
          <div class="chart-holder">
             <canvas id="pieChart"></canvas>
          </div>
@@ -393,56 +193,63 @@ $fetch_profile = $select_profile->fetch(PDO::FETCH_ASSOC);
       // Line Chart
       const lineCtx = document.getElementById('lineChart').getContext('2d');
       const lineChart = new Chart(lineCtx, {
-         type: 'line',
-         data: {
-            labels: monthlyData.labels,
-            datasets: [{
-               label: 'Orders',
-               data: monthlyData.orders,
-               borderColor: 'rgba(54, 162, 235, 1)',
-               backgroundColor: 'rgba(54, 162, 235, 0.1)',
-               borderWidth: 2,
-               tension: 0.4,
-               fill: true
-            }, {
-               label: 'Revenue ($)',
-               data: monthlyData.revenue,
-               borderColor: 'rgba(75, 192, 192, 1)',
-               backgroundColor: 'rgba(75, 192, 192, 0.1)',
-               borderWidth: 2,
-               tension: 0.4,
-               fill: true,
-               hidden: true
-            }]
-         },
-         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-               legend: {
-                  position: 'top',
-               },
-               tooltip: {
-                  callbacks: {
-                     label: function(context) {
+    type: 'line',
+    data: {
+        labels: monthlyData.labels,
+        datasets: [{
+            label: 'Orders',
+            data: monthlyData.orders,
+            borderColor: 'rgba(29, 5, 241, 1)',
+            backgroundColor: 'rgba(31, 253, 238, 0.83)',
+            borderWidth: 2,
+            tension: 0.4,
+            fill: true
+        }, {
+            label: 'Revenue',
+            data: monthlyData.revenue,
+            borderColor: 'rgba(29,5, 241, 1)',
+            backgroundColor: 'rgba(75, 192, 192, 0.1)',
+            borderWidth: 2,
+            tension: 0.4,
+            fill: true
+         
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+                display: true, // Changed from 'false' to true
+                labels: {
+                    usePointStyle: true,
+                    font: {
+                        size: 12
+                    }
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
                         let label = context.dataset.label || '';
                         if (label.includes('Revenue')) {
-                           label += ': $' + context.parsed.y.toLocaleString();
+                            label += ': ' + context.parsed.y.toLocaleString();
                         } else {
-                           label += ': ' + context.parsed.y.toLocaleString();
+                            label += ': ' + context.parsed.y.toLocaleString();
                         }
                         return label;
-                     }
-                  }
-               }
-            },
-            scales: {
-               y: {
-                  beginAtZero: true
-               }
+                    }
+                }
             }
-         }
-      });
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
 
       // Chart filter buttons
       document.querySelectorAll('.chart-controls button').forEach(button => {
@@ -467,7 +274,7 @@ $fetch_profile = $select_profile->fetch(PDO::FETCH_ASSOC);
       const pieChart = new Chart(pieCtx, {
          type: 'pie',
          data: {
-            labels: ['Pending Orders', 'Completed Orders', 'Products', 'Users', 'Admins', 'Messages'],
+            labels: ['Pending Orders', 'Completed Orders', 'Products', 'Users', 'Admins', ],
             datasets: [{
                data: [
                   <?= $total_pendings; ?>,
@@ -475,15 +282,15 @@ $fetch_profile = $select_profile->fetch(PDO::FETCH_ASSOC);
                   <?= $number_of_products; ?>,
                   <?= $number_of_users; ?>,
                   <?= $number_of_admins; ?>,
-                  <?= $number_of_messages; ?>
+                  
                ],
                backgroundColor: [
-                  'rgba(255, 99, 132, 0.7)',
-                  'rgba(54, 162, 235, 0.7)',
-                  'rgba(255, 206, 86, 0.7)',
-                  'rgba(75, 192, 192, 0.7)',
-                  'rgba(153, 102, 255, 0.7)',
-                  'rgba(255, 159, 64, 0.7)'
+                  'rgba(223, 242, 51, 0.7)',
+                  'rgba(100, 234, 140, 0.51)',
+                  'rgba(41, 58, 245, 0.7)',
+                  'rgba(255, 0, 0, 0.7)',
+                  'rgba(0, 181, 63, 0.92)',
+                  
                ],
                borderWidth: 1
             }]
