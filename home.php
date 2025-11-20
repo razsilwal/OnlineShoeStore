@@ -1,36 +1,197 @@
 <?php
+declare(strict_types=1);
+
 // Database connection and session start
 include 'components/connect.php';
 session_start();
 
 $user_id = $_SESSION['user_id'] ?? '';
 
+// Keep your existing wishlist/cart handler
 include 'components/wishlist_cart.php';
 
-// Function to sanitize input
-function sanitize($data) {
-    return htmlspecialchars(strip_tags(trim($data)));
-}
-
-// Generate CSRF token if not exists
-if (!isset($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-}
-
-// Track viewed products
-if(isset($_GET['pid'])) {
-    $pid = sanitize($_GET['pid']);
-    if(!isset($_SESSION['viewed_products'])) {
-        $_SESSION['viewed_products'] = array();
+/* =========================
+   Enhanced OOP Classes
+   ========================= */
+class InputSanitizer {
+    public static function string($value, string $default = ''): string {
+        if ($value === null) return $default;
+        return htmlspecialchars(strip_tags(trim($value)), ENT_QUOTES, 'UTF-8');
     }
-    if(!in_array($pid, $_SESSION['viewed_products'])) {
-        array_unshift($_SESSION['viewed_products'], $pid);
-        // Keep only last 5 viewed products
-        $_SESSION['viewed_products'] = array_slice($_SESSION['viewed_products'], 0, 5);
+    
+    public static function integer($value, int $default = 0): int {
+        return filter_var($value, FILTER_VALIDATE_INT) !== false ? (int)$value : $default;
+    }
+    
+    public static function float($value, float $default = 0.0): float {
+        return filter_var($value, FILTER_VALIDATE_FLOAT) !== false ? (float)$value : $default;
     }
 }
+
+class CSRFProtection {
+    private $sessionKey = 'csrf_token';
+    
+    public function __construct() {
+        if (!isset($_SESSION[$this->sessionKey])) {
+            $_SESSION[$this->sessionKey] = bin2hex(random_bytes(32));
+        }
+    }
+    
+    public function getToken(): string {
+        return $_SESSION[$this->sessionKey];
+    }
+    
+    public function validate($token): bool {
+        return hash_equals($this->getToken(), (string)$token);
+    }
+}
+
+class ProductViewTracker {
+    private $sessionKey = 'viewed_products';
+    private $maxProducts = 5;
+    
+    public function addProduct($productId): void {
+        if (empty($productId)) return;
+        
+        if (!isset($_SESSION[$this->sessionKey]) || !is_array($_SESSION[$this->sessionKey])) {
+            $_SESSION[$this->sessionKey] = array();
+        }
+        
+        $existingKey = array_search($productId, $_SESSION[$this->sessionKey]);
+        if ($existingKey !== false) {
+            unset($_SESSION[$this->sessionKey][$existingKey]);
+        }
+        
+        array_unshift($_SESSION[$this->sessionKey], $productId);
+        $_SESSION[$this->sessionKey] = array_slice($_SESSION[$this->sessionKey], 0, $this->maxProducts);
+    }
+    
+    public function getViewedProducts(): array {
+        return $_SESSION[$this->sessionKey] ?? array();
+    }
+}
+
+class ProductDataRepository {
+    private $database;
+    
+    public function __construct($database) {
+        $this->database = $database;
+    }
+    
+    public function fetchFeaturedProducts($limit = 8): array {
+        try {
+            // Check if products table exists
+            $checkTable = $this->database->query("SHOW TABLES LIKE 'products'");
+            if ($checkTable->rowCount() === 0) {
+                error_log("Products table does not exist");
+                return array();
+            }
+            
+            // Try different possible column names for featured status
+            $sql = "SELECT * FROM `products` 
+                    WHERE (featured = 1 OR is_featured = 1) AND status = 'active' 
+                    ORDER BY id DESC 
+                    LIMIT :limit";
+            
+            $statement = $this->database->prepare($sql);
+            $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $statement->execute();
+            
+            $results = $statement->fetchAll(PDO::FETCH_ASSOC);
+            return $results ? $results : array();
+            
+        } catch (PDOException $e) {
+            error_log("Database error in fetchFeaturedProducts: " . $e->getMessage());
+            return array();
+        }
+    }
+}
+
+class ProductService {
+    private $repository;
+    
+    public function __construct($repository) {
+        $this->repository = $repository;
+    }
+    
+    public function getFeaturedProducts($limit = 8): array {
+        $productsData = $this->repository->fetchFeaturedProducts($limit);
+        $processedProducts = array();
+        
+        foreach ($productsData as $productData) {
+            $processedProducts[] = $this->processProductData($productData);
+        }
+        
+        return $processedProducts;
+    }
+    
+    private function processProductData($productData): array {
+        $price = InputSanitizer::float($productData['price'] ?? 0);
+        $discount = InputSanitizer::integer($productData['discount'] ?? 0);
+        $discountedPrice = $discount > 0 ? $price - ($price * $discount / 100) : $price;
+        
+        $imageFilename = InputSanitizer::string($productData['image_01'] ?? $productData['image'] ?? '');
+        $imagePath = 'uploaded_img/' . $imageFilename;
+        
+        // Check multiple possible image locations
+        if (!empty($imageFilename)) {
+            if (file_exists($imagePath) && is_file($imagePath)) {
+                $imageUrl = $imagePath;
+            } elseif (file_exists('images/' . $imageFilename) && is_file('images/' . $imageFilename)) {
+                $imageUrl = 'images/' . $imageFilename;
+            } else {
+                $imageUrl = 'images/default-product.jpg';
+            }
+        } else {
+            $imageUrl = 'images/default-product.jpg';
+        }
+        
+        return array(
+            'id' => InputSanitizer::integer($productData['id']),
+            'name' => InputSanitizer::string($productData['name']),
+            'description' => InputSanitizer::string($productData['description'] ?? ''),
+            'price' => $price,
+            'discount' => $discount,
+            'discounted_price' => $discountedPrice,
+            'image_raw' => $imageFilename,
+            'image_url' => $imageUrl,
+            'avg_rating' => InputSanitizer::float($productData['avg_rating'] ?? $productData['rating'] ?? 0),
+            'review_count' => InputSanitizer::integer($productData['review_count'] ?? $productData['reviews'] ?? 0)
+        );
+    }
+}
+
+/* =========================
+   Application Execution
+   ========================= */
+$csrf = new CSRFProtection();
+$viewTracker = new ProductViewTracker();
+
+// Track viewed products via GET pid
+if (isset($_GET['pid'])) {
+    $productId = InputSanitizer::string($_GET['pid']);
+    $viewTracker->addProduct($productId);
+}
+
+// Fetch featured products
+$featuredProducts = array();
+$loadError = false;
+
+try {
+    // Check if database connection is working
+    if (!isset($conn) || !$conn) {
+        throw new Exception("Database connection failed");
+    }
+    
+    $productService = new ProductService(new ProductDataRepository($conn));
+    $featuredProducts = $productService->getFeaturedProducts(8);
+    
+} catch (Throwable $error) {
+    $loadError = true;
+    error_log("Home page error: " . $error->getMessage());
+}
+
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -192,7 +353,7 @@ if(isset($_GET['pid'])) {
       }
       
       .categories-grid {
-         display: grid;
+         display: flex;
          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
          gap: 3rem;
       }
@@ -411,10 +572,6 @@ if(isset($_GET['pid'])) {
          .home-slider .content span {
             font-size: 2rem;
          }
-         
-         .categories-grid {
-            grid-template-columns: 1fr;
-         }
       }
    </style>
 </head>
@@ -439,8 +596,6 @@ if(isset($_GET['pid'])) {
                   <a href="shop.php" class="btn">Shop Now</a>
                </div>
             </div>
-
-            
 
          </div>
          <div class="swiper-pagination"></div>
@@ -484,85 +639,67 @@ if(isset($_GET['pid'])) {
    </div>
    
    <div class="products-container">
-      <?php
-      // Query to get featured products with better error handling
-      $select_products = $conn->prepare("SELECT * FROM `products` WHERE featured = 1 AND status = 'active' ORDER BY id DESC LIMIT 8");
-      
-      try {
-          $select_products->execute();
-          
-          if($select_products->rowCount() > 0) {
-              echo '<div class="products-grid">';
-              
-              while($fetch_product = $select_products->fetch(PDO::FETCH_ASSOC)) {
-                  // Calculate discounted price
-                  $price = $fetch_product['price'];
-                  $discounted_price = $fetch_product['discount'] > 0 
-                      ? $price - ($price * $fetch_product['discount'] / 100) 
-                      : $price;
+      <?php if (!$loadError && !empty($featuredProducts)): ?>
+         <div class="products-grid">
+            <?php foreach ($featuredProducts as $product): ?>
+               <div class="product-card animate__animated animate__fadeInUp">
+                  <?php if ($product['discount'] > 0): ?>
+                     <div class="product-badge"><?= $product['discount'] ?>% OFF</div>
+                  <?php endif; ?>
                   
-                  // Check if image exists
-                  $image_path = 'uploaded_img/'.$fetch_product['image_01'];
-                  $image_exists = file_exists($image_path) ? $image_path : 'images/default-product.jpg';
-      ?>
-                  <div class="product-card animate__animated animate__fadeInUp">
-                     <?php if($fetch_product['discount'] > 0): ?>
-                        <div class="product-badge"><?= $fetch_product['discount'] ?>% OFF</div>
-                     <?php endif; ?>
+                  <img src="<?= $product['image_url'] ?>" 
+                       alt="<?= $product['name'] ?>" 
+                       class="product-image"
+                       onerror="this.src='images/default-product.jpg'">
+                  
+                  <div class="product-info">
+                     <h3 class="product-title"><?= $product['name'] ?></h3>
                      
-                     <img src="<?= $image_exists ?>" 
-                          alt="<?= htmlspecialchars($fetch_product['name']) ?>" 
-                          class="product-image">
-                     
-                     <div class="product-info">
-                        <h3 class="product-title"><?= htmlspecialchars($fetch_product['name']) ?></h3>
-                        
-                        <div class="product-rating">
-                           <?php
-                           $rating = isset($fetch_product['avg_rating']) ? round($fetch_product['avg_rating']) : 0;
-                           for($i = 1; $i <= 5; $i++) {
+                     <div class="product-rating">
+                        <?php
+                           $rating = (int)round($product['avg_rating']);
+                           for ($i = 1; $i <= 5; $i++) {
                               echo $i <= $rating ? '<i class="fas fa-star"></i>' : '<i class="far fa-star"></i>';
                            }
-                           ?>
-                           <span>(<?= $fetch_product['review_count'] ?? 0 ?>)</span>
-                        </div>
-                        
-                        <div class="product-price">
-                           NRs. <?= number_format($discounted_price, 2) ?>
-                           <?php if($fetch_product['discount'] > 0): ?>
-                              <span class="old-price">NRs. <?= number_format($price, 2) ?></span>
-                           <?php endif; ?>
-                        </div>
-                        
-                        <form action="" method="post" class="product-actions">
-                           <input type="hidden" name="pid" value="<?= $fetch_product['id'] ?>">
-                           <input type="hidden" name="name" value="<?= htmlspecialchars($fetch_product['name']) ?>">
-                           <input type="hidden" name="price" value="<?= $discounted_price ?>">
-                           <input type="hidden" name="image" value="<?= $fetch_product['image_01'] ?>">
-                           <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
-                           <input type="number" name="qty" value="1" min="1" max="99" class="qty" style="display:none;">
-                           
-                           <button type="submit" name="add_to_cart" class="add-to-cart">Add to Cart</button>
-                           <button type="submit" name="add_to_wishlist" class="wishlist-btn"><i class="far fa-heart"></i></button>
-                        </form>
+                        ?>
+                        <span>(<?= $product['review_count'] ?>)</span>
                      </div>
+                     
+                     <div class="product-price">
+                        NRs. <?= number_format($product['discounted_price'], 2) ?>
+                        <?php if ($product['discount'] > 0): ?>
+                           <span class="old-price">NRs. <?= number_format($product['price'], 2) ?></span>
+                        <?php endif; ?>
+                     </div>
+                     
+                     <form action="" method="post" class="product-actions">
+                        <input type="hidden" name="pid" value="<?= $product['id'] ?>">
+                        <input type="hidden" name="name" value="<?= $product['name'] ?>">
+                        <input type="hidden" name="price" value="<?= $product['discounted_price'] ?>">
+                        <input type="hidden" name="image" value="<?= $product['image_raw'] ?>">
+                        <input type="hidden" name="csrf_token" value="<?= $csrf->getToken() ?>">
+                        <input type="number" name="qty" value="1" min="1" max="99" class="qty" style="display:none;">
+                        
+                        <button type="submit" name="add_to_cart" class="add-to-cart">Add to Cart</button>
+                        <button type="submit" name="add_to_wishlist" class="wishlist-btn" aria-label="Add to wishlist">
+                           <i class="far fa-heart"></i>
+                        </button>
+                     </form>
                   </div>
-      <?php
-              }
-              echo '</div>';
-          } else {
-              echo '<div class="empty">
-                      <p>No featured products found at the moment</p>
-                      <a href="shop.php" class="btn">Browse All Products</a>
-                   </div>';
-          }
-      } catch (PDOException $e) {
-          echo '<div class="empty">
-                  <p>Error loading products. Please try again later.</p>
-                  <a href="shop.php" class="btn">Browse Products</a>
-               </div>';
-      }
-      ?>
+               </div>
+            <?php endforeach; ?>
+         </div>
+      <?php elseif ($loadError): ?>
+         <div class="empty">
+            <p>Error loading products. Please try again later.</p>
+            <a href="shop.php" class="btn">Browse Products</a>
+         </div>
+      <?php else: ?>
+         <div class="empty">
+            <p>No featured products found at the moment</p>
+            <a href="shop.php" class="btn">Browse All Products</a>
+         </div>
+      <?php endif; ?>
       
       <div style="text-align: center; margin-top: 4rem;">
          <a href="shop.php" class="btn" style="padding: 1.2rem 3rem; font-size: 1.6rem;">View All Products</a>
@@ -594,23 +731,6 @@ document.addEventListener('DOMContentLoaded', function() {
          el: ".swiper-pagination",
          clickable: true,
       },
-   });
-
-   // Add scroll animations
-   const animateElements = document.querySelectorAll('.animate__animated');
-   
-   const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-         if (entry.isIntersecting) {
-            const animationClass = entry.target.getAttribute('class').split(' ').find(c => c.startsWith('animate__'));
-            entry.target.classList.add(animationClass);
-            observer.unobserve(entry.target);
-         }
-      });
-   }, { threshold: 0.1 });
-   
-   animateElements.forEach(element => {
-      observer.observe(element);
    });
 
    // Add to cart/wishlist animation

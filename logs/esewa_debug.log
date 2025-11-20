@@ -1,0 +1,47 @@
+Processing Payment:
+Transaction UUID: 
+Total Amount: 
+Product Code: EPAYTEST
+Order ID: 5
+
+Processing Payment:
+Transaction UUID: 
+Total Amount: 
+Product Code: EPAYTEST
+Order ID: 6
+
+Decoded eSewa Data:
+Encoded Data: eyJ0cmFuc2FjdGlvbl9jb2RlIjoiMDAwRDJPMCIsInN0YXR1cyI6IkNPTVBMRVRFIiwidG90YWxfYW1vdW50IjoiNjQwMC4wIiwidHJhbnNhY3Rpb25fdXVpZCI6IjY5MWVjNTE4NDFmODgiLCJwcm9kdWN0X2NvZGUiOiJFUEFZVEVTVCIsInNpZ25lZF9maWVsZF9uYW1lcyI6InRyYW5zYWN0aW9uX2NvZGUsc3RhdHVzLHRvdGFsX2Ftb3VudCx0cmFuc2FjdGlvbl91dWlkLHByb2R1Y3RfY29kZSxzaWduZWRfZmllbGRfbmFtZXMiLCJzaWduYXR1cmUiOiJzajZTelNnTjBoNnBVTFlwR0JGWTVNU0ErMytUZllnNHlHempaRUpreHVvPSJ9
+Decoded JSON: {"transaction_code":"000D2O0","status":"COMPLETE","total_amount":"6400.0","transaction_uuid":"691ec51841f88","product_code":"EPAYTEST","signed_field_names":"transaction_code,status,total_amount,transaction_uuid,product_code,signed_field_names","signature":"sj6SzSgN0h6pULYpGBFY5MSA+3+TfYg4yGzjZEJkxuo="}
+Parsed Data: Array
+(
+    [transaction_code] => 000D2O0
+    [status] => COMPLETE
+    [total_amount] => 6400.0
+    [transaction_uuid] => 691ec51841f88
+    [product_code] => EPAYTEST
+    [signed_field_names] => transaction_code,status,total_amount,transaction_uuid,product_code,signed_field_names
+    [signature] => sj6SzSgN0h6pULYpGBFY5MSA+3+TfYg4yGzjZEJkxuo=
+)
+
+
+Extracted Parameters:
+Transaction UUID: 691ec51841f88
+Total Amount: 6400.0
+Product Code: EPAYTEST
+Status: COMPLETE
+Transaction Code: 000D2O0
+
+Verification URL: https://rc.esewa.com.np/api/epay/transaction/status/?product_code=EPAYTEST&total_amount=6400.0&transaction_uuid=691ec51841f88
+Processing Payment:
+Transaction UUID: 
+Total Amount: 
+Product Code: EPAYTEST
+Order ID: 13
+
+Processing Payment:
+Transaction UUID: 
+Total Amount: 
+Product Code: EPAYTEST
+Order ID: 15
+

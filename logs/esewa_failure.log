@@ -1,0 +1,79 @@
+=== eSewa Payment Failure ===
+Date: 2025-11-20 08:22:03
+User ID: 5
+Order ID: 5
+GET Parameters: Array
+(
+    [reason] => missing_parameters
+)
+
+POST Parameters: Array
+(
+)
+
+=================================
+
+Order 5 marked as failed
+=== eSewa Payment Failure ===
+Date: 2025-11-20 08:23:35
+User ID: 
+Order ID: 
+GET Parameters: Array
+(
+    [reason] => missing_parameters
+)
+
+POST Parameters: Array
+(
+)
+
+=================================
+
+=== eSewa Payment Failure ===
+Date: 2025-11-20 08:27:59
+User ID: 5
+Order ID: 6
+GET Parameters: Array
+(
+    [reason] => missing_parameters
+)
+
+POST Parameters: Array
+(
+)
+
+=================================
+
+Order 6 marked as failed
+=== eSewa Payment Failure ===
+Date: 2025-11-20 19:22:59
+User ID: 5
+Order ID: 13
+GET Parameters: Array
+(
+    [reason] => missing_parameters
+)
+
+POST Parameters: Array
+(
+)
+
+=================================
+
+Order 13 marked as failed
+=== eSewa Payment Failure ===
+Date: 2025-11-20 19:37:10
+User ID: 5
+Order ID: 15
+GET Parameters: Array
+(
+    [reason] => missing_parameters
+)
+
+POST Parameters: Array
+(
+)
+
+=================================
+
+Order 15 marked as failed

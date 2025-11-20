@@ -4,23 +4,70 @@ session_start();
 
 $user_id = $_SESSION['user_id'] ?? '';
 
-// Handle order deletion
-if(isset($_POST['delete_order'])) {
-    $order_id = $_POST['order_id'];
-    $order_id = filter_var($order_id, FILTER_SANITIZE_STRING);
-    
-    // Verify the order belongs to the user before deleting
-    $verify_order = $conn->prepare("SELECT * FROM `orders` WHERE id = ? AND user_id = ?");
-    $verify_order->execute([$order_id, $user_id]);
-    
-    if($verify_order->rowCount() > 0) {
-        $delete_order = $conn->prepare("DELETE FROM `orders` WHERE id = ?");
-        $delete_order->execute([$order_id]);
-        $message[] = 'Order deleted successfully!';
-    } else {
-        $message[] = 'Order not found!';
+// ======= OOP CLASS FOR ORDERS =======
+class OrderHandler {
+    private $conn;
+    private $user_id;
+
+    public function __construct($conn, $user_id) {
+        $this->conn = $conn;
+        $this->user_id = $user_id;
+    }
+
+    // Get all orders for the user
+    public function getOrders() {
+        $stmt = $this->conn->prepare("SELECT * FROM `orders` WHERE user_id = ? ORDER BY placed_on DESC");
+        $stmt->execute([$this->user_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Get order count by status
+    public function getOrderCounts() {
+        $stmt = $this->conn->prepare("
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN payment_status = 'completed' THEN 1 ELSE 0 END) as completed,
+                SUM(CASE WHEN payment_status = 'pending' THEN 1 ELSE 0 END) as pending,
+                SUM(CASE WHEN payment_status = 'failed' THEN 1 ELSE 0 END) as failed
+            FROM `orders` 
+            WHERE user_id = ?
+        ");
+        $stmt->execute([$this->user_id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // Delete order
+    public function deleteOrder($order_id) {
+        $stmt = $this->conn->prepare("SELECT * FROM `orders` WHERE id = ? AND user_id = ?");
+        $stmt->execute([$order_id, $this->user_id]);
+        if($stmt->rowCount() > 0) {
+            $del = $this->conn->prepare("DELETE FROM `orders` WHERE id = ?");
+            $del->execute([$order_id]);
+            return ['status'=>'success', 'message'=>'Order deleted successfully!'];
+        } else {
+            return ['status'=>'error', 'message'=>'Order not found!'];
+        }
     }
 }
+
+// ======= HANDLE ORDER OPERATIONS =======
+$orderHandler = new OrderHandler($conn, $user_id);
+$message = [];
+
+if(isset($_POST['delete_order'])) {
+    $order_id = filter_var($_POST['order_id'], FILTER_SANITIZE_STRING);
+    $result = $orderHandler->deleteOrder($order_id);
+    $message[] = $result['message'];
+}
+
+// Check for payment success message
+if(isset($_GET['payment']) && $_GET['payment'] == 'success') {
+    $message[] = "Payment completed successfully! Your order has been confirmed.";
+}
+
+// Fetch orders and counts
+$orders = $user_id ? $orderHandler->getOrders() : [];
+$orderCounts = $user_id ? $orderHandler->getOrderCounts() : ['total' => 0, 'completed' => 0, 'pending' => 0, 'failed' => 0];
 ?>
 
 <!DOCTYPE html>
@@ -30,612 +77,537 @@ if(isset($_POST['delete_order'])) {
    <meta http-equiv="X-UA-Compatible" content="IE=edge">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <title>My Orders | Kickster</title>
-   
-   <!-- Font Awesome -->
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-   
-   
+   <style>
+        :root {
+            --primary: #f57224;
+            --primary-dark: #e0611a;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --info: #17a2b8;
+            --dark: #343a40;
+            --light: #f8f9fa;
+            --border: #dee2e6;
+            --shadow: 0 2px 15px rgba(0,0,0,0.1);
+            --radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        /* Messages */
+        .messages-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .message {
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border-radius: var(--radius);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideIn 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .message.success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border-left: 4px solid var(--success);
+            color: #155724;
+        }
+
+        .message.error {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            border-left: 4px solid var(--danger);
+            color: #721c24;
+        }
+
+        .message i {
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.3s;
+        }
+
+        .message i:hover {
+            opacity: 1;
+        }
+
+        /* Orders Section */
+        .orders-section {
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .orders-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--dark);
+            text-align: center;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--primary), #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .orders-subtitle {
+            text-align: center;
+            color: #6c757d;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+        }
+
+        .stat-card.total { border-top: 4px solid var(--primary); }
+        .stat-card.completed { border-top: 4px solid var(--success); }
+        .stat-card.pending { border-top: 4px solid var(--warning); }
+        .stat-card.failed { border-top: 4px solid var(--danger); }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .stat-card.total .stat-icon { color: var(--primary); }
+        .stat-card.completed .stat-icon { color: var(--success); }
+        .stat-card.pending .stat-icon { color: var(--warning); }
+        .stat-card.failed .stat-icon { color: var(--danger); }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: black; 
+        }
+
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Orders Container */
+        .orders-container {
+            display: grid;
+            gap: 25px;
+        }
+
+        /* Order Card */
+        .order-card {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            transition: all 0.3s ease;
+            border-left: 4px solid var(--primary);
+        }
+
+        .order-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light);
+        }
+
+        .order-id {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .order-date {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .order-details {
+            margin-bottom: 20px;
+        }
+
+        .order-product {
+            padding: 8px 12px;
+            background: var(--light);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 3px solid var(--primary);
+            color: black;
+        }
+
+        .order-price {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 15px;
+            text-align: right;
+        }
+
+        .order-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .order-status {
+            padding: 8px 16px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-completed { background: #d4edda; color: var(--success); }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-failed { background: #f8d7da; color: var(--danger); }
+
+        .order-payment {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .order-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .order-btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .order-btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .order-btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .order-btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .order-btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .order-btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        /* Empty State */
+        .empty-orders, .login-prompt {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .empty-icon, .login-icon {
+            font-size: 4rem;
+            color: #6c757d;
+            margin-bottom: 20px;
+        }
+
+        .empty-title, .login-title {
+            font-size: 1.8rem;
+            color: var(--dark);
+            margin-bottom: 15px;
+        }
+
+        .empty-description, .login-prompt p {
+            color: #6c757d;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .empty-action, .login-link {
+            display: inline-block;
+            padding: 12px 30px;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .empty-action:hover, .login-link:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        /* Animations */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .orders-title {
+                font-size: 2rem;
+            }
+
+            .order-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .order-meta {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .order-actions {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+        }
+   </style>
 </head>
 <body>
-   
-<!-- Header Section -->
-<?php
-// messages.php - Reusable message component
+    <?php include 'components/user_header.php'; ?>
 
-// Start session if not already started
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Initialize message array
-$messages = [];
-
-// Check for session messages
-if (isset($_SESSION['messages']) && !empty($_SESSION['messages'])) {
-    $messages = (array)$_SESSION['messages'];
-    unset($_SESSION['messages']); // Clear after displaying
-}
-
-?>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Kickster</title>
-   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-   <link rel="stylesheet" href="css/order.css">
-
-</head>
-<body>
-    <?php if (!empty($messages)): ?>
+    <!-- Display messages -->
+    <?php if(isset($message) && !empty($message)): ?>
         <div class="messages-container">
-            <?php foreach ($messages as $msg): ?>
-                <div class="message <?= htmlspecialchars($msg['type'], ENT_QUOTES) ?>">
-                    <span><?= htmlspecialchars($msg['text'], ENT_QUOTES) ?></span>
+            <?php foreach($message as $msg): ?>
+                <div class="message <?= strpos($msg, 'successfully') !== false ? 'success' : 'error' ?>">
+                    <span><?= htmlspecialchars($msg) ?></span>
                     <i class="fas fa-times" onclick="this.parentElement.remove();"></i>
                 </div>
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
 
-    <?php include 'components/user_header.php'; ?>
+    <!-- Main Content -->
+    <section class="orders-section">
+       <div class="container">
+          <h1 class="orders-title">My Orders</h1>
+          <p class="orders-subtitle">Track and manage all your orders in one place</p>
 
+          <?php if($user_id && !empty($orders)): ?>
+          <!-- Stats Cards -->
+          <div class="stats-container">
+             <div class="stat-card total">
+                <div class="stat-icon">
+                   <i class="fas fa-shopping-bag"></i>
+                </div>
+                <div class="stat-number"><?= $orderCounts['total'] ?></div>
+                <div class="stat-label">Total Orders</div>
+             </div>
+             
+             <div class="stat-card completed">
+                <div class="stat-icon">
+                   <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-number"><?= $orderCounts['completed'] ?></div>
+                <div class="stat-label">Completed</div>
+             </div>
+             
+             <div class="stat-card pending">
+                <div class="stat-icon">
+                   <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-number"><?= $orderCounts['pending'] ?></div>
+                <div class="stat-label">Pending</div>
+             </div>
+             
+             <div class="stat-card failed">
+                <div class="stat-icon">
+                   <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="stat-number"><?= $orderCounts['failed'] ?></div>
+                <div class="stat-label">Failed</div>
+             </div>
+          </div>
+          <?php endif; ?>
 
-    <style>
-    /* Message Styles */
-    .messages-container {
-        position: fixed;
-        top: 80px;
-        right: 20px;
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-    }
-    
-    .message {
-        padding: 15px 25px;
-        border-radius: 5px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        transform: translateX(0);
-        opacity: 1;
-        transition: all 0.5s ease;
-        max-width: 300px;
-        word-wrap: break-word;
-        animation: slide-in 0.5s forwards;
-    }
-    
-    .message.info {
-        background: #3498db;
-        color: white;
-    }
-    
-    .message.success {
-        background: #2ecc71;
-        color: white;
-    }
-    
-    .message.error {
-        background: #e74c3c;
-        color: white;
-    }
-    
-    .message.warning {
-        background: #f4c90c;
-        color: #333;
-    }
-    
-    .message span {
-        margin-right: 15px;
-    }
-    
-    .message i {
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
-    
-    .message i:hover {
-        transform: scale(1.2);
-    }
-    
-    @keyframes slide-in {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    
-    @media (max-width: 768px) {
-        .messages-container {
-            width: calc(100% - 40px);
-            right: 20px;
-            left: 20px;
-            top: 70px;
-        }
-        
-        .message {
-            max-width: none;
-            width: 100%;
-        }
-    }
-    
-    /* Header Styles */
-    .header {
-        background: linear-gradient(135deg, rgb(128, 172, 185), rgb(75, 119, 139));
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        position: sticky;
-        top: 0;
-        z-index: 1000;
-        transition: all 0.3s ease;
-    }
-    
-    .logo {
-        font-size: 1.8rem;
-        color: white;
-        position: relative;
-        text-decoration: none;
-    }
-    
-    .logo span {
-        color: #f39c12;
-    }
-    
-    .logo-pulse {
-        position: absolute;
-        width: 8px;
-        height: 8px;
-        background: #f39c12;
-        border-radius: 50%;
-        top: -5px;
-        right: -5px;
-        animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-        0% { transform: scale(0.95); opacity: 0.8; }
-        70% { transform: scale(1.3); opacity: 0.2; }
-        100% { transform: scale(0.95); opacity: 0.8; }
-    }
-    
-    .nav-link {
-        color: white;
-        margin: 0 15px;
-        position: relative;
-        text-transform: uppercase;
-        font-weight: 500;
-        transition: all 0.3s;
-    }
-    
-    .nav-link:hover {
-        color: #ffffff;
-        text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
-        transform: translateY(-2px);
-        transition: all 0.3s ease;
-    }
-    
-    .icons {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-    }
-    
-    .icon-link {
-        color: white;
-        font-size: 1.2rem;
-        position: relative;
-        transition: transform 0.3s;
-    }
-    
-    .icon-link:hover {
-        transform: translateY(-3px);
-        color: #f39c12;
-    }
-    
-    .badge {
-        position: absolute;
-        top: -10px;
-        right: -10px;
-        background: #e74c3c;
-        color: white;
-        border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.7rem;
-    }
-    
-    .pulse {
-        animation: pulse 1.5s infinite;
-    }
-    
-    .user-icon {
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-    
-    .user-icon:hover {
-        color: #f39c12;
-        transform: scale(1.1);
-    }
-    
-    .profile-card {
-        position: absolute;
-        right: 2rem;
-        top: 100%;
-        background: white;
-        border-radius: 10px;
-        padding: 20px;
-        width: 250px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-10px);
-        transition: all 0.3s;
-        z-index: 1001;
-    }
-    
-    .profile-card.active {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-    }
-    
-    .profile-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 15px;
-    }
-    
-    .avatar {
-        width: 40px;
-        height: 40px;
-        background: #3498db;
-        color: white;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 10px;
-        font-weight: bold;
-    }
-    
-    .username {
-        margin: 0;
-        font-weight: 600;
-        color: #2c3e50;
-    }
-    
-    .profile-btn, .logout-btn {
-        display: block;
-        width: 100%;
-        padding: 10px;
-        margin: 5px 0;
-        border-radius: 5px;
-        text-align: left;
-        transition: all 0.3s;
-    }
-    
-    .profile-btn {
-        background: #f8f9fa;
-        color: #2c3e50;
-    }
-    
-    .profile-btn:hover {
-        background: #e9ecef;
-    }
-    
-    .logout-btn {
-        background: #f8f9fa;
-        color: #e74c3c;
-    }
-    
-    .logout-btn:hover {
-        background: #fdecea;
-    }
-    
-    .option-btn {
-        display: inline-block;
-        width: 48%;
-        padding: 8px;
-        margin: 5px 0;
-        border-radius: 5px;
-        text-align: center;
-        transition: all 0.3s;
-    }
-    
-    .gradient-btn {
-        background: linear-gradient(to right, rgb(153, 188, 212), #2ecc71);
-        color: white;
-    }
-    
-    .gradient-btn:hover {
-        opacity: 0.9;
-        transform: translateY(-2px);
-    }
-    
-    .login-prompt {
-        text-align: center;
-        color: #7f8c8d;
-        margin-bottom: 15px;
-    }
-    
-    .hamburger {
-        display: none;
-        cursor: pointer;
-        font-size: 1.5rem;
-    }
-    
-    @media (max-width: 768px) {
-        .navbar {
-            position: fixed;
-            top: 70px;
-            left: -100%;
-            background: rgb(11, 129, 247);
-            width: 80%;
-            height: calc(100vh - 70px);
-            flex-direction: column;
-            padding: 20px;
-            transition: all 0.5s;
-        }
-        
-        .navbar.active {
-            left: 0;
-        }
-        
-        .nav-link {
-            margin: 15px 0;
-            font-size: 1.1rem;
-        }
-        
-        .hamburger {
-            display: block;
-        }
-    }
-    </style>
+          <div class="orders-container">
+          <?php
+             if($user_id == '') {
+                echo '
+                <div class="login-prompt">
+                   <div class="login-icon"><i class="fas fa-user-lock"></i></div>
+                   <h2 class="login-title">Please <a href="user_login.php" class="login-link">login</a> to view your orders</h2>
+                   <p>Access your order history, track shipments, and manage your purchases</p>
+                </div>
+                ';
+             } elseif(empty($orders)) {
+                echo '
+                <div class="empty-orders">
+                   <div class="empty-icon"><i class="fas fa-box-open"></i></div>
+                   <h2 class="empty-title">No Orders Yet</h2>
+                   <p class="empty-description">Start your shopping journey with us! Discover amazing products and great deals.</p>
+                   <a href="shop.php" class="empty-action">
+                      <i class="fas fa-shopping-cart"></i> Start Shopping
+                   </a>
+                </div>
+                ';
+             } else {
+                foreach($orders as $fetch_orders):
+                    $status = strtolower($fetch_orders['payment_status']);
+                    $status_class = 'status-' . $status;
+                    $products = explode(', ', $fetch_orders['total_products']);
+                    $order_date = date('M d, Y - h:i A', strtotime($fetch_orders['placed_on']));
+                    $payment_method = ucfirst($fetch_orders['method']);
+          ?>
+          <div class="order-card">
+             <div class="order-header">
+                <div class="order-id">Order #<?= $fetch_orders['id'] ?></div>
+                <div class="order-date"><?= $order_date ?></div>
+             </div>
+
+             <div class="order-details">
+                <?php foreach($products as $product): ?>
+                    <?php if(!empty(trim($product))): ?>
+                        <div class="order-product">
+                           <i class="fas fa-cube"></i> <?= htmlspecialchars($product) ?>
+                        </div>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+             </div>
+
+             <div class="order-price">Total: Rs. <?= number_format($fetch_orders['total_price'], 2) ?></div>
+
+             <div class="order-meta">
+                <div class="order-status <?= $status_class ?>">
+                   <i class="fas fa-<?= 
+                      $status == 'completed' ? 'check-circle' : 
+                      ($status == 'pending' ? 'clock' : 
+                      ($status == 'failed' ? 'times-circle' : 'info-circle'))
+                   ?>"></i>
+                   <?= ucfirst($status) ?>
+                </div>
+                <div class="order-payment">
+                   <i class="fas fa-credit-card"></i> Paid via <?= $payment_method ?>
+                </div>
+             </div>
+
+             <div class="order-actions">
+                <a href="shop.php" class="order-btn order-btn-primary">
+                    <i class="fas fa-shopping-cart"></i> Shop Again
+                </a>
+                <a href="contact.php" class="order-btn order-btn-secondary">
+                    <i class="fas fa-headset"></i> Support
+                </a>
+                <?php if($status == 'pending'): ?>
+                <form method="POST" style="display: inline;">
+                   <input type="hidden" name="order_id" value="<?= $fetch_orders['id'] ?>">
+                   <button type="submit" name="delete_order" class="order-btn order-btn-danger" onclick="return confirm('Are you sure you want to cancel this order?');">
+                       <i class="fas fa-trash"></i> Cancel Order
+                   </button>
+                </form>
+                <?php endif; ?>
+             </div>
+          </div>
+          <?php
+                endforeach;
+             }
+          ?>
+          </div>
+       </div>
+    </section>
 
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Message handling
+        // Auto-close messages
         const messages = document.querySelectorAll('.message');
-        
-        messages.forEach(message => {
-            // Auto-close after 4 seconds
-            const autoCloseTimer = setTimeout(() => {
-                message.style.opacity = '0';
-                setTimeout(() => message.remove(), 500);
-            }, 4000);
-            
-            // Manual close
-            const closeBtn = message.querySelector('.fa-times');
-            if (closeBtn) {
-                closeBtn.addEventListener('click', function() {
-                    clearTimeout(autoCloseTimer);
-                    message.style.opacity = '0';
-                    setTimeout(() => message.remove(), 500);
-                });
-            }
+        messages.forEach(msg => {
+            setTimeout(() => { 
+                msg.style.opacity = '0';
+                msg.style.transform = 'translateY(-20px)';
+                setTimeout(() => msg.remove(), 300);
+            }, 5000);
         });
-        
-        // Header functionality
-        const userBtn = document.getElementById('user-btn');
-        const profileCard = document.querySelector('.profile-card');
-        const menuBtn = document.getElementById('menu-btn');
-        const navbar = document.querySelector('.navbar');
-        
-        // Toggle profile dropdown
-        if (userBtn && profileCard) {
-            userBtn.addEventListener('click', function() {
-                profileCard.classList.toggle('active');
+
+        // Add smooth animations
+        document.addEventListener('DOMContentLoaded', function() {
+            const orderCards = document.querySelectorAll('.order-card');
+            orderCards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+                card.style.animation = 'slideIn 0.5s ease forwards';
+                card.style.opacity = '0';
             });
-        }
-        
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.user-icon') && !e.target.closest('.profile-card')) {
-                if (profileCard) profileCard.classList.remove('active');
-            }
         });
-        
-        // Mobile menu toggle
-        if (menuBtn && navbar) {
-            menuBtn.addEventListener('click', function() {
-                navbar.classList.toggle('active');
-                menuBtn.classList.toggle('fa-times');
-            });
-        }
-    });
     </script>
-</body>
-</html>
-
-<!-- Display messages -->
-<?php
-if(isset($message)) {
-   foreach($message as $msg) {
-      echo '
-      <div class="message">
-         <span>'.$msg.'</span>
-         <i class="fas fa-times" onclick="this.parentElement.remove();"></i>
-      </div>
-      ';
-   }
-}
-?>
-
-<!-- Main Content -->
-<section class="orders-section">
-   <div class="container">
-      <div class="orders-header">
-         <h1 class="orders-title">My Orders</h1>
-      </div>
-
-      <div class="orders-container">
-      <?php
-         if($user_id == '') {
-            echo '
-            <div class="login-prompt">
-               <h2 class="login-title">Please <a href="user_login.php" class="login-link">login</a> to view your orders</h2>
-               <p>View and manage all your orders in one place</p>
-            </div>
-            ';
-         } else {
-            $select_orders = $conn->prepare("SELECT * FROM `orders` WHERE user_id = ? ORDER BY placed_on DESC");
-            $select_orders->execute([$user_id]);
-            
-            if($select_orders->rowCount() > 0) {
-               while($fetch_orders = $select_orders->fetch(PDO::FETCH_ASSOC)) {
-                  $status = strtolower($fetch_orders['payment_status']);
-                  $status_class = 'status-' . $status;
-                  $products = explode(' - ', $fetch_orders['total_products']);
-                  $order_date = date('M d, Y', strtotime($fetch_orders['placed_on']));
-      ?>
-      <div class="order-card">
-         <div class="order-header">
-            <div class="order-id">Order Product <?= $fetch_orders['id'] ?></div>
-            <div class="order-date"><?= $order_date ?></div>
-         </div>
-         
-         <div class="order-details" style="color: #55cb4fff;">
-            <?php foreach($products as $product): ?>
-               <?php if(!empty(trim($product))): ?>
-                  <div class="order-product"><?= htmlspecialchars($product) ?></div>
-               <?php endif; ?>
-            <?php endforeach; ?>
-         </div>
-         
-         <div class="order-price">Total: NRs. <?= number_format($fetch_orders['total_price'], 2) ?></div>
-         
-         <div class="order-status <?= $status_class ?>">
-            <i class="fas fa-<?= 
-               $status == 'pending' ? 'clock' : 
-               ($status == 'processing' ? 'cog' : 
-               ($status == 'shipped' ? 'truck' : 
-               ($status == 'delivered' ? 'check-circle' : 'times-circle')))
-            ?>"></i>
-            <?= ucfirst($status) ?>
-         </div>
-         
-         <div class="order-actions">
-           <button class="order-btn order-btn-primary" onclick="window.location.href='shop.php'">
-    <i class="fas fa-cart"></i> Shop
-</button>
-
-
-            <form method="POST" style="display: inline;">
-               <input type="hidden" name="order_id" value="<?= $fetch_orders['id'] ?>">
-               <button type="submit" name="delete_order" class="order-btn order-btn-danger" onclick="return confirm('Are you sure you want to cancel this order?');">
-                  <i class="fas fa-trash"></i> Cancel
-               </button>
-            </form>
-         </div>
-      </div>
-      <?php
-               }
-            } else {
-               echo '
-               <div class="empty-orders">
-                  <div class="empty-icon">
-                     <i class="fas fa-box-open"></i>
-                  </div>
-                  <h2 class="empty-title">No Orders Yet</h2>
-                  <p class="empty-description">You haven\'t placed any orders with us yet. Start shopping to discover amazing products!</p>
-                  <a href="shop.php" class="empty-action">Start Shopping</a>
-               </div>
-               ';
-            }
-         }
-      ?>
-      </div>
-   </div>
-</section>
-
-<script>
-// Newsletter Functionality
-document.addEventListener('DOMContentLoaded', function() {
-   const newsletter = document.querySelector('.newsletter-corner.top-left');
-   const toggle = newsletter.querySelector('.newsletter-toggle');
-   const closeBtn = newsletter.querySelector('.close-btn');
-   const form = newsletter.querySelector('.newsletter-form');
-
-   // Toggle newsletter box
-   toggle.addEventListener('click', () => {
-      newsletter.classList.toggle('active');
-   });
-
-   closeBtn.addEventListener('click', () => {
-      newsletter.classList.remove('active');
-   });
-
-   // Form submission
-   form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const email = form.querySelector('input').value;
-      
-      // Simulate successful submission
-      form.innerHTML = `
-        <div style="text-align: center; padding: 10px 0;">
-          <i class="fas fa-check-circle" style="font-size: 40px; color: #4cc9f0;"></i>
-          <h3 style="margin: 10px 0; color: #4361ee;">Thank You!</h3>
-          <p>Check your email for your discount code</p>
-        </div>
-      `;
-      
-      // Hide after 3 seconds
-      setTimeout(() => {
-        newsletter.classList.remove('active');
-        // Reset form after animation
-        setTimeout(() => {
-          form.innerHTML = `
-            <input type="email" placeholder="Enter your email" required>
-            <button type="submit" class="btn">
-              <i class="fas fa-paper-plane"></i> Claim Discount
-            </button>
-          `;
-        }, 300);
-      }, 3000);
-   });
-   
-   // Footer animations
-   const footerBoxes = document.querySelectorAll('.footer .box');
-   footerBoxes.forEach((box, index) => {
-      box.style.animationDelay = `${index * 0.1}s`;
-   });
-});
-</script>
-<script>
-// Mobile menu toggle
-document.getElementById('menu-btn').addEventListener('click', function() {
-   document.getElementById('navbar').classList.toggle('active');
-});
-
-// User account box toggle
-document.getElementById('user-btn').addEventListener('click', function() {
-   document.querySelector('.account-box').classList.toggle('active');
-});
-
-// Close account box when clicking outside
-document.addEventListener('click', function(e) {
-   if(!e.target.closest('.account-box') && !e.target.closest('#user-btn')) {
-      document.querySelector('.account-box').classList.remove('active');
-   }
-});
-
-// Auto-close messages after 5 seconds
-document.addEventListener('DOMContentLoaded', function() {
-   const messages = document.querySelectorAll('.message');
-   messages.forEach(message => {
-      setTimeout(() => {
-         message.style.opacity = '0';
-         setTimeout(() => message.remove(), 300);
-      }, 5000);
-   });
-});
-</script>
-
 </body>
 </html>

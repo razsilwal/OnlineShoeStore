@@ -1,6 +1,6 @@
 <?php
 
-$db_name = 'mysql:host=localhost;dbname=shoe_db';
+$db_name = 'mysql:host=localhost;port=3307;dbname=shoe_db';
 $user_name = 'root';
 $user_password = '';
 

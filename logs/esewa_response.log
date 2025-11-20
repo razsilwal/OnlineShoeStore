@@ -1,0 +1,133 @@
+=== eSewa Success Response ===
+Date: 2025-11-20 08:22:03
+GET Parameters: Array
+(
+    [data] => eyJ0cmFuc2FjdGlvbl9jb2RlIjoiMDAwRDJOUiIsInN0YXR1cyI6IkNPTVBMRVRFIiwidG90YWxfYW1vdW50IjoiNjQwMC4wIiwidHJhbnNhY3Rpb25fdXVpZCI6IjY5MWVjMTM5MmMxZjkiLCJwcm9kdWN0X2NvZGUiOiJFUEFZVEVTVCIsInNpZ25lZF9maWVsZF9uYW1lcyI6InRyYW5zYWN0aW9uX2NvZGUsc3RhdHVzLHRvdGFsX2Ftb3VudCx0cmFuc2FjdGlvbl91dWlkLHByb2R1Y3RfY29kZSxzaWduZWRfZmllbGRfbmFtZXMiLCJzaWduYXR1cmUiOiJSUVNCZDdkMXV1U2pyZ0NCUG03NUdXL2N6eXNDd1pBZHVMZ0pEZ2UxYXFrPSJ9
+)
+
+POST Parameters: Array
+(
+)
+
+User ID: 5
+Order ID: 5
+Session Data: Array
+(
+    [csrf_token] => 142f2934abb32418860c8a15ce160019c9551482724a77b3cbde77390ff6a0c3
+    [user_id] => 5
+    [temp_name] => Whilemina Dean
+    [temp_number] => +1 (238) 725-6731
+    [temp_email] => joreke@mailinator.com
+    [temp_address] => Ipsum incididunt co - Voluptas et et eum s
+    [temp_products] => Heel(2)
+    [temp_price] => 4000
+    [current_order_id] => 5
+    [order_transaction_id] => 691ec1392c1f9
+)
+
+=================================
+
+=== eSewa Success Response ===
+Date: 2025-11-20 08:27:59
+GET Parameters: Array
+(
+    [data] => eyJ0cmFuc2FjdGlvbl9jb2RlIjoiMDAwRDJOVCIsInN0YXR1cyI6IkNPTVBMRVRFIiwidG90YWxfYW1vdW50IjoiNjQwMC4wIiwidHJhbnNhY3Rpb25fdXVpZCI6IjY5MWVjMjE4ZGMxY2UiLCJwcm9kdWN0X2NvZGUiOiJFUEFZVEVTVCIsInNpZ25lZF9maWVsZF9uYW1lcyI6InRyYW5zYWN0aW9uX2NvZGUsc3RhdHVzLHRvdGFsX2Ftb3VudCx0cmFuc2FjdGlvbl91dWlkLHByb2R1Y3RfY29kZSxzaWduZWRfZmllbGRfbmFtZXMiLCJzaWduYXR1cmUiOiI3Nmx1QW5sN3FhNFV2aS9sT3RoWTBjU0J3ZzJ6UFNLZDdmaTBXQTJUYVY0PSJ9
+)
+
+POST Parameters: Array
+(
+)
+
+User ID: 5
+Order ID: 6
+Session Data: Array
+(
+    [csrf_token] => 142f2934abb32418860c8a15ce160019c9551482724a77b3cbde77390ff6a0c3
+    [user_id] => 5
+    [temp_name] => Whilemina Dean
+    [temp_number] => +1 (238) 725-6731
+    [temp_email] => joreke@mailinator.com
+    [temp_address] => Ipsum incididunt co - Voluptas et et eum s
+    [temp_products] => Heel(2)
+    [temp_price] => 4000
+    [current_order_id] => 6
+    [order_transaction_id] => 691ec218dc1ce
+)
+
+=================================
+
+=== eSewa Success Response ===
+Date: 2025-11-20 08:38:33
+GET Parameters: Array
+(
+    [data] => eyJ0cmFuc2FjdGlvbl9jb2RlIjoiMDAwRDJPMCIsInN0YXR1cyI6IkNPTVBMRVRFIiwidG90YWxfYW1vdW50IjoiNjQwMC4wIiwidHJhbnNhY3Rpb25fdXVpZCI6IjY5MWVjNTE4NDFmODgiLCJwcm9kdWN0X2NvZGUiOiJFUEFZVEVTVCIsInNpZ25lZF9maWVsZF9uYW1lcyI6InRyYW5zYWN0aW9uX2NvZGUsc3RhdHVzLHRvdGFsX2Ftb3VudCx0cmFuc2FjdGlvbl91dWlkLHByb2R1Y3RfY29kZSxzaWduZWRfZmllbGRfbmFtZXMiLCJzaWduYXR1cmUiOiJzajZTelNnTjBoNnBVTFlwR0JGWTVNU0ErMytUZllnNHlHempaRUpreHVvPSJ9
+)
+
+POST Parameters: Array
+(
+)
+
+User ID: 5
+Order ID: 7
+=================================
+
+=== eSewa Success Response ===
+Date: 2025-11-20 19:22:59
+GET Parameters: Array
+(
+    [data] => eyJ0cmFuc2FjdGlvbl9jb2RlIjoiMDAwRDJZUiIsInN0YXR1cyI6IkNPTVBMRVRFIiwidG90YWxfYW1vdW50IjoiMTAwMC4wIiwidHJhbnNhY3Rpb25fdXVpZCI6IjY5MWY1YzM2YjBhZGMiLCJwcm9kdWN0X2NvZGUiOiJFUEFZVEVTVCIsInNpZ25lZF9maWVsZF9uYW1lcyI6InRyYW5zYWN0aW9uX2NvZGUsc3RhdHVzLHRvdGFsX2Ftb3VudCx0cmFuc2FjdGlvbl91dWlkLHByb2R1Y3RfY29kZSxzaWduZWRfZmllbGRfbmFtZXMiLCJzaWduYXR1cmUiOiJ3SHl1QmtNZlIzWXB3TElSUlJKdGJ4ZVRCU3NkWDdYZ1lnd2Q0Z2wxMnRvPSJ9
+)
+
+POST Parameters: Array
+(
+)
+
+User ID: 5
+Order ID: 13
+Session Data: Array
+(
+    [csrf_token] => 142f2934abb32418860c8a15ce160019c9551482724a77b3cbde77390ff6a0c3
+    [user_id] => 5
+    [temp_name] => Whilemina Dean
+    [temp_number] => +1 (238) 725-6731
+    [temp_email] => joreke@mailinator.com
+    [temp_address] => Ipsum incididunt co - Voluptas et et eum s
+    [temp_products] => Heel(2)
+    [temp_price] => 4000
+    [admin_id] => 1
+    [current_order_id] => 13
+    [order_transaction_id] => 691f5c36b0adc
+)
+
+=================================
+
+=== eSewa Success Response ===
+Date: 2025-11-20 19:37:10
+GET Parameters: Array
+(
+    [data] => eyJ0cmFuc2FjdGlvbl9jb2RlIjoiMDAwRDJZVSIsInN0YXR1cyI6IkNPTVBMRVRFIiwidG90YWxfYW1vdW50IjoiMTAwMC4wIiwidHJhbnNhY3Rpb25fdXVpZCI6IjY5MWY1ZWY0ZWZiMTIiLCJwcm9kdWN0X2NvZGUiOiJFUEFZVEVTVCIsInNpZ25lZF9maWVsZF9uYW1lcyI6InRyYW5zYWN0aW9uX2NvZGUsc3RhdHVzLHRvdGFsX2Ftb3VudCx0cmFuc2FjdGlvbl91dWlkLHByb2R1Y3RfY29kZSxzaWduZWRfZmllbGRfbmFtZXMiLCJzaWduYXR1cmUiOiJCbWx1MXBTZEdUcXVTVnR2MHF5Q010czNjNkpnMTBvRzdaeWdaKzlORHVFPSJ9
+)
+
+POST Parameters: Array
+(
+)
+
+User ID: 5
+Order ID: 15
+Session Data: Array
+(
+    [csrf_token] => 142f2934abb32418860c8a15ce160019c9551482724a77b3cbde77390ff6a0c3
+    [user_id] => 5
+    [temp_name] => Whilemina Dean
+    [temp_number] => +1 (238) 725-6731
+    [temp_email] => joreke@mailinator.com
+    [temp_address] => Ipsum incididunt co - Voluptas et et eum s
+    [temp_products] => Heel(2)
+    [temp_price] => 4000
+    [admin_id] => 1
+    [current_order_id] => 15
+    [order_transaction_id] => 691f5ef4efb12
+)
+
+=================================
+

@@ -501,14 +501,14 @@ section {
 }
 
 .products .box-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, 33rem);
-    gap: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
     justify-content: center;
     align-items: flex-start;
 }
 
-.products .box-container .box {
+.products .box-container .box{
     position: relative;
     background-color: var(--white);
     box-shadow: var(--box-shadow);
