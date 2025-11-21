@@ -147,7 +147,7 @@ $orderCounts = $user_id ? $orderHandler->getOrderCounts() : ['total' => 0, 'comp
 
         /* Orders Section */
         .orders-section {
-            padding: 40px 20px;
+            padding: 120px 20px 40px;
             max-width: 1200px;
             margin: 0 auto;
         }
@@ -243,13 +243,90 @@ $orderCounts = $user_id ? $orderHandler->getOrderCounts() : ['total' => 0, 'comp
         }
 
         .order-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid var(--light);
-        }
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--light);
+    gap: 20px;
+}
+
+.order-info {
+    flex: 1;
+}
+
+.order-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.order-title i {
+    color: var(--primary);
+}
+
+.order-meta-info {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.order-items, .order-date {
+    color: #6c757d;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.order-amount {
+    text-align: right;
+    min-width: 150px;
+}
+
+.amount-label {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.amount-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+/* Remove the old order-price class since we moved it to header */
+.order-price {
+    display: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .order-header {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .order-amount {
+        text-align: left;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .amount-label {
+        margin-bottom: 0;
+    }
+}
 
         .order-id {
             font-size: 1.3rem;
@@ -533,9 +610,27 @@ $orderCounts = $user_id ? $orderHandler->getOrderCounts() : ['total' => 0, 'comp
           ?>
           <div class="order-card">
              <div class="order-header">
-                <div class="order-id">Order #<?= $fetch_orders['id'] ?></div>
-                <div class="order-date"><?= $order_date ?></div>
-             </div>
+    <div class="order-info">
+        <div class="order-title">
+            <i class="fas fa-receipt"></i>
+            Your Order
+        </div>
+        <div class="order-meta-info">
+            <span class="order-items">
+                <i class="fas fa-cube"></i>
+                <?= count(array_filter($products)) ?> item<?= count(array_filter($products)) != 1 ? 's' : '' ?>
+            </span>
+            <span class="order-date">
+                <i class="fas fa-calendar"></i>
+                <?= $order_date ?>
+            </span>
+        </div>
+    </div>
+    <div class="order-amount">
+        <div class="amount-label">Total Amount</div>
+        <div class="amount-value">Rs. <?= number_format($fetch_orders['total_price'], 2) ?></div>
+    </div>
+</div>
 
              <div class="order-details">
                 <?php foreach($products as $product): ?>

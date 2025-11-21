@@ -10,27 +10,9 @@ if(isset($_SESSION['user_id'])){
    $user_id = '';
 };
 
-function custom_hash($password) {
-    $pepper = "N3p@l4598!";
-    $salted_password = $password . $pepper;
-    
-    $key = 0;
-    $p = 31;
-    $q = 7;
-    $m = 1000000007;
-    
-    // Calculate initial key
-    for ($i = 0; $i < strlen($salted_password); $i++) {
-        $key = ($key * 31 + ord($salted_password[$i])) % $m;
-    }
-    
-    // Apply multiple iterations
-    for ($i = 0; $i < 1000; $i++) {
-        $key = ($key * $p + $q) % $m;
-    }
-    
-    return strval($key);
-}
+// Include central hashing function
+include 'components/hashing.php';
+
 
 if(isset($_POST['submit'])){
    // Sanitize inputs
@@ -65,7 +47,8 @@ if(isset($_POST['submit'])){
             $insert_user->execute([$name, $email, $hashed_password]);
             
             if($insert_user->rowCount() > 0){
-               $message[] = 'Registered successfully! Please login now.';
+            $_SESSION['success'] = "Registered successfully! Please login now.";               header('Location: user_login.php');
+                exit();
             } else {
                $message[] = 'Registration failed! Please try again.';
             }

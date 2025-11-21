@@ -4,6 +4,8 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+session_start(); // ✅ ADD THIS LINE
+
 // Include Composer autoload (make sure you have run `composer require phpmailer/phpmailer`)
 require 'vendor/autoload.php';
 
@@ -11,6 +13,8 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 include 'components/connect.php';
+
+include 'components/hashing.php';
 
 $message = [];
 
@@ -33,6 +37,10 @@ if (isset($_POST['submit'])) {
         // Store OTP and expiry in DB
         $update_otp = $conn->prepare("UPDATE `users` SET otp = ?, otp_expiry = ? WHERE email = ?");
         $update_otp->execute([$otp, $expiry_time, $email]);
+
+        // ✅ ADD THESE TWO LINES - Store session variables for verify_otp.php
+        $_SESSION['reset_email'] = $email;
+        $_SESSION['otp_sent'] = true;
 
         // Send Email via PHPMailer
         $mail = new PHPMailer(true);
@@ -57,7 +65,7 @@ if (isset($_POST['submit'])) {
             $mail->Body    = "Hello,<br><br>Your OTP for password reset is: <strong>$otp</strong><br><br>This OTP will expire in 2 minutes.<br><br>Regards,<br>Kickster";
 
             $mail->send();
-            header("Location: verify_otp.php?email=" . urlencode($email));
+            header("Location: verify_otp.php");
             exit();
         } catch (Exception $e) {
             $message[] = "❌ Mailer Error: " . $mail->ErrorInfo;

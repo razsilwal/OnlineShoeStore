@@ -1,29 +1,15 @@
 <?php
 session_start();
+
+if(isset($_SESSION['success'])){
+    $success = $_SESSION['success'];
+    unset($_SESSION['success']); // remove message so it shows only once
+}
 include 'components/connect.php';
 
 // Include the same custom_hash function from your registration page
-function custom_hash($password) {
-    $pepper = "N3p@l4598!";
-    $salted_password = $password . $pepper;
-    
-    $key = 0;
-    $p = 31;
-    $q = 7;
-    $m = 1000000007;
-    
-    // Calculate initial key
-    for ($i = 0; $i < strlen($salted_password); $i++) {
-        $key = ($key * 31 + ord($salted_password[$i])) % $m;
-    }
-    
-    // Apply multiple iterations
-    for ($i = 0; $i < 1000; $i++) {
-        $key = ($key * $p + $q) % $m;
-    }
-    
-    return strval($key);
-}
+// Include central hashing function
+include 'components/hashing.php';
 
 if(isset($_SESSION['user_id'])){
    $user_id = $_SESSION['user_id'];
@@ -47,8 +33,31 @@ if(isset($_POST['submit'])){
       exit();
    }else{
       $message[] = 'Incorrect username or password!';
+
+      
+   // DEBUG CODE - ADD THIS
+   echo "<div style='background: #f8d7da; color: #721c24; padding: 10px; margin: 10px; border-radius: 5px;'>";
+   echo "<strong>DEBUG INFO:</strong><br>";
+   echo "Email: " . $email . "<br>";
+   echo "Input Password: " . $_POST['pass'] . "<br>";
+   echo "Hashed Input: " . custom_hash($_POST['pass']) . "<br>";
+   echo "Hash Length: " . strlen(custom_hash($_POST['pass'])) . "<br>";
+   
+   // Check what's actually in database
+   $debug_stmt = $conn->prepare("SELECT password, LENGTH(password) as pass_length FROM users WHERE email = ?");
+   $debug_stmt->execute([$email]);
+   $debug_user = $debug_stmt->fetch(PDO::FETCH_ASSOC);
+   
+   if($debug_user){
+       echo "DB Password: " . $debug_user['password'] . "<br>";
+       echo "DB Password Length: " . $debug_user['pass_length'] . "<br>";
+       echo "Hashes Match: " . (custom_hash($_POST['pass']) === $debug_user['password'] ? 'YES' : 'NO') . "<br>";
+   } else {
+       echo "User not found in database<br>";
    }
+   echo "</div>";
 }
+   }
 ?>
 
 <!-- The rest of your HTML remains exactly the same -->
@@ -58,7 +67,7 @@ if(isset($_POST['submit'])){
    <meta charset="UTF-8">
    <meta http-equiv="X-UA-Compatible" content="IE=edge">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Home | Nepal~Store</title>
+   <title>Kickster - Login Page</title>
    
    <!-- Font Awesome -->
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">

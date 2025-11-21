@@ -688,10 +688,10 @@ $user_id = $_SESSION['user_id'] ?? '';
             <h3>Raj Krishna Silwal</h3>
             <span>Backend Developer</span>
             <div class="share">
-               <a href="#"><i class="fab fa-facebook-f"></i></a>
+               <a href="https://www.facebook.com/raz.silwal.397900"><i class="fab fa-facebook-f"></i></a>
                <a href="#"><i class="fab fa-twitter"></i></a>
                <a href="#"><i class="fab fa-instagram"></i></a>
-               <a href="#"><i class="fab fa-linkedin-in"></i></a>
+               <a href="https://www.linkedin.com/in/raz-silwal-74812a198"><i class="fab fa-linkedin-in"></i></a>
             </div>
          </div>
       </div>
@@ -704,10 +704,10 @@ $user_id = $_SESSION['user_id'] ?? '';
             <h3>Krishna Adhikari</h3>
             <span>Frontend Developer</span>
             <div class="share">
-               <a href="#"><i class="fab fa-facebook-f"></i></a>
+               <a href="https://www.facebook.com/krishna.adhikari.198369"><i class="fab fa-facebook-f"></i></a>
                <a href="#"><i class="fab fa-twitter"></i></a>
                <a href="#"><i class="fab fa-instagram"></i></a>
-               <a href="#"><i class="fab fa-linkedin-in"></i></a>
+               <a href="https://www.linkedin.com/in/krishna-adhikari-640b40209/"><i class="fab fa-linkedin-in"></i></a>
             </div>
          </div>
       </div>

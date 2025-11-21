@@ -1,30 +1,52 @@
 <?php
+session_start();
 include 'components/connect.php';
 
-$email = $_GET['email'] ?? '';
+// Check if user came from forgot password
+if(!isset($_SESSION['reset_email']) || !isset($_SESSION['otp_sent'])){
+    header('Location: forgot_password.php');
+    exit();
+}
+
+$email = $_SESSION['reset_email'];
 $message = [];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if(isset($_POST['verify_otp'])){
     $entered_otp = $_POST['otp'];
-
-    $stmt = $conn->prepare("SELECT otp, otp_expiry FROM users WHERE email = ?");
-    $stmt->execute([$email]);
-    $user = $stmt->fetch();
-
-    if ($user) {
-        if (time() <= $user['otp_expiry']) {
-            if ($entered_otp == $user['otp']) {
-                // OTP is correct and valid
-                header("Location: reset_password_form.php?email=" . urlencode($email));
-                exit();
-            } else {
-                $message[] = "Incorrect OTP. Please try again.";
-            }
-        } else {
-            $message[] = "OTP has expired. Please request a new one.";
-        }
+    
+    if(empty($entered_otp)){
+        $message[] = 'Please enter OTP!';
     } else {
-        $message[] = "User not found.";
+        // Verify OTP from database
+        $current_time = time();
+        $check_otp = $conn->prepare("SELECT id FROM users WHERE email = ? AND otp = ? AND otp_expiry > ?");
+        $check_otp->execute([$email, $entered_otp, $current_time]);
+        
+        if($check_otp->rowCount() > 0){
+            $_SESSION['otp_verified'] = true;
+            header('Location: reset_password.php');
+            exit();
+        } else {
+            $message[] = 'Invalid or expired OTP! Please try again.';
+        }
+    }
+}
+
+if(isset($_POST['resend_otp'])){
+    // Generate new OTP
+    $new_otp = '';
+    for ($i = 0; $i < 6; $i++) {
+        $new_otp .= mt_rand(0, 9);
+    }
+    
+    $expiry_time = time() + 120; // 2 minutes
+    
+    // Store new OTP in database
+    $update_otp = $conn->prepare("UPDATE users SET otp = ?, otp_expiry = ? WHERE email = ?");
+    if($update_otp->execute([$new_otp, $expiry_time, $email])){
+        $message[] = "New OTP sent! Demo OTP: <strong>$new_otp</strong> (This would be emailed in production)";
+    } else {
+        $message[] = 'Failed to resend OTP. Please try again.';
     }
 }
 ?>
@@ -34,379 +56,466 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify OTP - GKStore</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+    <title>Verify OTP | Kickster</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root {
-            --primary: #4361ee;
-            --primary-dark: #3a0ca3;
-            --secondary: #f72585;
-            --accent: #fca311;
-            --light: #f8f9fa;
-            --dark: #14213d;
-            --gray: #6c757d;
-            --danger: #ef233c;
-            --success: #2ec4b6;
-            --border: #e2e8f0;
-            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-        
+        /* ===== RESET ===== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
+        /* ===== BODY ===== */
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            background: linear-gradient(120deg, #0f2027, #203a43, #2c5364);
             min-height: 100vh;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-            color: var(--dark);
+            flex-direction: column;
         }
-        
-        .container {
-            background: white;
-            border-radius: 1.5rem;
-            box-shadow: var(--shadow);
+
+        /* ===== HEADER ===== */
+        .header {
             width: 100%;
-            max-width: 28rem;
-            overflow: hidden;
-            position: relative;
-            z-index: 1;
-            animation: fadeInUp 0.6s ease-out;
-        }
-        
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 12rem;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            z-index: -1;
-            clip-path: ellipse(100% 80% at 50% 0%);
-        }
-        
-        .logo-container {
-            display: flex;
-            justify-content: center;
-            padding: 2.5rem 0 1.5rem;
-        }
-        
-        .logo {
-            width: 5rem;
-            height: 5rem;
-            background: white;
-            border-radius: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-        
-        .logo i {
-            font-size: 2.5rem;
-            color: var(--primary);
-            animation: bounce 2s infinite;
-        }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        .content {
-            padding: 0 2.5rem 2.5rem;
-        }
-        
-        h2 {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 1.75rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 1rem;
-            color: white;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .subtitle {
-            font-size: 0.95rem;
-            color: rgba(255, 255, 255, 0.9);
-            text-align: center;
-            margin-bottom: 2.5rem;
-            position: relative;
-            z-index: 1;
-        }
-        
-        .email-display {
-            font-weight: 600;
-            color: white;
-            word-break: break-all;
-        }
-        
-        .card {
-            background: white;
-            border-radius: 1rem;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        }
-        
-        .alert {
-            padding: 1rem;
-            border-radius: 0.75rem;
-            margin-bottom: 1.5rem;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            animation: slideIn 0.4s ease-out;
-            border: 1px solid transparent;
-        }
-        
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .alert-danger {
-            background-color: rgba(239, 35, 60, 0.1);
-            color: var(--danger);
-            border-color: rgba(239, 35, 60, 0.2);
-        }
-        
-        .alert-warning {
-            background-color: rgba(247, 37, 133, 0.1);
-            color: var(--secondary);
-            border-color: rgba(247, 37, 133, 0.2);
-        }
-        
-        .alert i {
-            margin-right: 0.75rem;
-            font-size: 1.25rem;
-        }
-        
-        .otp-form {
-            margin-top: 1rem;
-        }
-        
-        .otp-input-container {
+            padding: 15px 30px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
             display: flex;
             justify-content: space-between;
-            margin-bottom: 2rem;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
-        
-        .otp-input {
-            width: 3.5rem;
-            height: 3.5rem;
-            text-align: center;
-            font-size: 1.5rem;
+
+        .logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #fff;
             font-weight: 600;
-            border: 2px solid var(--border);
-            border-radius: 0.75rem;
-            transition: all 0.3s ease;
-            background-color: #f8fafc;
+            font-size: 22px;
         }
-        
-        .otp-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
-            background-color: white;
+
+        .cube-container {
+            margin-right: 8px;
         }
-        
-        .btn-verify {
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(to right, var(--primary), var(--primary-dark));
-            color: white;
+
+        .rotating-cube {
+            animation: spin 4s linear infinite;
+            font-size: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .theme-toggle {
+            background: transparent;
             border: none;
-            border-radius: 0.75rem;
-            font-size: 1rem;
+            color: #fff;
+            cursor: pointer;
+            font-size: 18px;
+            transition: transform 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.2);
+        }
+
+        /* ===== MAIN FORM SECTION ===== */
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 15px;
+        }
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 450px;
+            color: #fff;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== FORM HEADER ===== */
+        .form-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .form-header h2 {
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #2ecc71;
+        }
+
+        .form-header p {
+            color: #bbb;
+            font-size: 14px;
+        }
+
+        .email-display {
+            background: rgba(52, 152, 219, 0.1);
+            border: 1px solid rgba(52, 152, 219, 0.3);
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin: 15px 0;
+            font-size: 14px;
+            color: #3498db;
+            text-align: center;
+        }
+
+        /* ===== MESSAGES ===== */
+        .message {
+            background: rgba(255, 99, 71, 0.15);
+            border: 1px solid rgba(255, 99, 71, 0.5);
+            padding: 12px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            animation: shake 0.5s ease-in-out;
+        }
+
+        .message.success {
+            background: rgba(46, 204, 113, 0.15);
+            border-color: rgba(46, 204, 113, 0.5);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* ===== OTP CONTAINER ===== */
+        .otp-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin: 25px 0;
+        }
+
+        .otp-input {
+            width: 55px;
+            height: 65px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .otp-input:focus {
+            border-color: #2ecc71;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 15px rgba(46, 204, 113, 0.3);
+            transform: scale(1.05);
+        }
+
+        .otp-input.filled {
+            border-color: #3498db;
+            background: rgba(52, 152, 219, 0.1);
+        }
+
+        /* ===== BUTTON ===== */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.75rem;
+            gap: 8px;
+            transition: all 0.3s ease;
+            margin-top: 10px;
         }
-        
-        .btn-verify:hover {
-            background: linear-gradient(to right, var(--primary-dark), var(--primary));
+
+        .btn:hover {
+            background: linear-gradient(135deg, #27ae60, #219653);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
         }
-        
-        .btn-verify:active {
+
+        .btn:active {
             transform: translateY(0);
         }
-        
-        .resend-link {
+
+        .btn-resend {
+            background: transparent;
+            border: 2px solid #3498db;
+            color: #3498db;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 auto;
+        }
+
+        .btn-resend:hover {
+            background: rgba(52, 152, 219, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* ===== RESEND OPTION ===== */
+        .resend-option {
             text-align: center;
-            margin-top: 1.5rem;
-            font-size: 0.9rem;
-            color: var(--gray);
+            margin: 25px 0;
+            color: #bbb;
+            font-size: 14px;
         }
-        
-        .resend-link a {
-            color: var(--primary);
-            font-weight: 600;
+
+        .resend-option p {
+            margin-bottom: 15px;
+        }
+
+        /* ===== FOOTER TEXT ===== */
+        .form-footer {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 14px;
+            color: #bbb;
+        }
+
+        .form-footer a {
+            color: #2ecc71;
             text-decoration: none;
-            transition: all 0.2s ease;
+            font-weight: 500;
+            transition: color 0.3s ease;
         }
-        
-        .resend-link a:hover {
+
+        .form-footer a:hover {
+            color: #27ae60;
             text-decoration: underline;
-            color: var(--primary-dark);
         }
-        
-        .timer {
-            color: var(--secondary);
-            font-weight: 600;
-            margin-top: 0.5rem;
+
+        /* ===== ILLUSTRATION ===== */
+        .illustration {
+            text-align: center;
+            margin: 1.5rem 0;
+            color: #f39c12;
         }
-        
-        /* Responsive adjustments */
+
+        .illustration i {
+            font-size: 4rem;
+            opacity: 0.8;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
-            .container {
-                border-radius: 1rem;
-            }
-            
-            .content {
-                padding: 0 1.5rem 1.5rem;
-            }
-            
-            h2 {
-                font-size: 1.5rem;
-            }
-            
-            .card {
-                padding: 1.5rem;
+            .form-container {
+                padding: 25px 20px;
+                margin: 15px;
             }
             
             .otp-input {
-                width: 3rem;
-                height: 3rem;
-                font-size: 1.25rem;
+                width: 45px;
+                height: 55px;
+                font-size: 20px;
+            }
+            
+            .otp-container {
+                gap: 8px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="logo-container">
-            <div class="logo">
-                <i class="fas fa-shield-alt"></i>
-            </div>
+   
+<header class="header">
+    <a href="home.php" class="logo">
+        <div class="cube-container">
+            <i class="fas fa-cube rotating-cube"></i>
         </div>
-        
-        <div class="content">
-            <h2>Verify Your Identity</h2>
-            <p class="subtitle">We've sent a 6-digit code to<br><span class="email-display"><?php echo htmlspecialchars($email); ?></span></p>
-            
-            <div class="card">
-                <?php if (!empty($message)): ?>
-                    <div class="alert <?php echo strpos($message[0], 'expired') !== false ? 'alert-warning' : 'alert-danger'; ?>">
-                        <i class="fas <?php echo strpos($message[0], 'expired') !== false ? 'fa-exclamation-triangle' : 'fa-exclamation-circle'; ?>"></i>
-                        <?php echo $message[0]; ?>
-                    </div>
-                <?php endif; ?>
-                
-                <form method="POST" class="otp-form">
-                    <div class="otp-input-container">
-                        <input type="text" name="otp1" class="otp-input" maxlength="1" pattern="\d" required autofocus oninput="moveToNext(this, 'otp2')">
-                        <input type="text" name="otp2" class="otp-input" maxlength="1" pattern="\d" required oninput="moveToNext(this, 'otp3')">
-                        <input type="text" name="otp3" class="otp-input" maxlength="1" pattern="\d" required oninput="moveToNext(this, 'otp4')">
-                        <input type="text" name="otp4" class="otp-input" maxlength="1" pattern="\d" required oninput="moveToNext(this, 'otp5')">
-                        <input type="text" name="otp5" class="otp-input" maxlength="1" pattern="\d" required oninput="moveToNext(this, 'otp6')">
-                        <input type="text" name="otp6" class="otp-input" maxlength="1" pattern="\d" required oninput="moveToNext(this, 'btn-verify')">
-                    </div>
-                    
-                    <input type="hidden" name="otp" id="full-otp">
-                    
-                    <button type="submit" class="btn-verify" id="btn-verify">
-                        <i class="fas fa-check-circle"></i> Verify Code
-                    </button>
-                </form>
-            </div>
-            
-            <p class="resend-link">
-                Didn't receive the code? <a href="forgot_password.php?email=<?php echo urlencode($email); ?>">Resend OTP</a>
-                <div class="timer" id="timer">02:00</div>
-            </p>
-        </div>
-    </div>
+        <span class="logo-text">Kickster</span>
+    </a>
+    <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+    </button>
+</header>
 
-    <script>
-        // Combine OTP digits into one field before submission
-        document.querySelector('form').addEventListener('submit', function(e) {
-            const otp1 = document.querySelector('input[name="otp1"]').value;
-            const otp2 = document.querySelector('input[name="otp2"]').value;
-            const otp3 = document.querySelector('input[name="otp3"]').value;
-            const otp4 = document.querySelector('input[name="otp4"]').value;
-            const otp5 = document.querySelector('input[name="otp5"]').value;
-            const otp6 = document.querySelector('input[name="otp6"]').value;
-            
-            document.getElementById('full-otp').value = otp1 + otp2 + otp3 + otp4 + otp5 + otp6;
-        });
+<main>
+    <section class="form-container">
+        <div class="form-header">
+            <h2>Verify OTP</h2>
+            <p>Enter the 6-digit code sent to your email</p>
+        </div>
         
-        // Auto move to next OTP field
-        function moveToNext(current, nextFieldId) {
-            if (current.value.length >= current.maxLength) {
-                const nextField = document.getElementsByName(nextFieldId)[0];
-                if (nextField) {
-                    nextField.focus();
+        <div class="email-display">
+            <i class="fas fa-envelope"></i> 
+            <?php echo htmlspecialchars($email); ?>
+        </div>
+        
+        <?php
+        if(isset($message)){
+            foreach($message as $msg){
+                $is_success = strpos($msg, 'New OTP sent') !== false;
+                $class = $is_success ? 'message success' : 'message';
+                echo '<div class="'.$class.'">'.$msg.'</div>';
+            }
+        }
+        ?>
+
+        <div class="illustration">
+            <i class="fas fa-mobile-alt"></i>
+        </div>
+        
+        <form action="" method="post">
+            <div class="form-group">
+                <label for="otp">6-Digit Verification Code</label>
+                <div class="otp-container">
+                    <input type="text" name="otp1" class="otp-input" maxlength="1" oninput="moveToNext(this, 'otp2')" pattern="[0-9]" required>
+                    <input type="text" name="otp2" class="otp-input" maxlength="1" oninput="moveToNext(this, 'otp3')" pattern="[0-9]" required>
+                    <input type="text" name="otp3" class="otp-input" maxlength="1" oninput="moveToNext(this, 'otp4')" pattern="[0-9]" required>
+                    <input type="text" name="otp4" class="otp-input" maxlength="1" oninput="moveToNext(this, 'otp5')" pattern="[0-9]" required>
+                    <input type="text" name="otp5" class="otp-input" maxlength="1" oninput="moveToNext(this, 'otp6')" pattern="[0-9]" required>
+                    <input type="text" name="otp6" class="otp-input" maxlength="1" pattern="[0-9]" required>
+                </div>
+                <input type="hidden" name="otp" id="fullOtp">
+            </div>
+            
+            <button type="submit" class="btn" name="verify_otp" onclick="combineOtp()">
+                <i class="fas fa-check-circle"></i>
+                <span>Verify OTP</span>
+            </button>
+            
+            <div class="resend-option">
+                <p>Didn't receive the code?</p>
+                <button type="submit" name="resend_otp" class="btn-resend">
+                    <i class="fas fa-redo"></i> Resend OTP
+                </button>
+            </div>
+            
+            <div class="form-footer">
+                <a href="forgot_password.php">← Back to email entry</a>
+            </div>
+        </form>
+    </section>
+</main>
+
+<script>
+   function moveToNext(current, nextFieldName) {
+        if (current.value.length >= current.maxLength) {
+            const nextField = document.getElementsByName(nextFieldName)[0];
+            if (nextField) {
+                nextField.focus();
+            }
+        }
+        
+        // Update visual state
+        if (current.value.length > 0) {
+            current.classList.add('filled');
+        } else {
+            current.classList.remove('filled');
+        }
+    }
+    
+    function combineOtp() {
+        const otp1 = document.getElementsByName('otp1')[0].value;
+        const otp2 = document.getElementsByName('otp2')[0].value;
+        const otp3 = document.getElementsByName('otp3')[0].value;
+        const otp4 = document.getElementsByName('otp4')[0].value;
+        const otp5 = document.getElementsByName('otp5')[0].value;
+        const otp6 = document.getElementsByName('otp6')[0].value;
+        
+        document.getElementById('fullOtp').value = otp1 + otp2 + otp3 + otp4 + otp5 + otp6;
+    }
+    
+    // Auto-focus first OTP input and handle backspace
+    document.addEventListener('DOMContentLoaded', function() {
+        const otpInputs = document.querySelectorAll('.otp-input');
+        const firstInput = otpInputs[0];
+        firstInput.focus();
+        
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && this.value === '' && index > 0) {
+                    const prevInput = otpInputs[index - 1];
+                    prevInput.focus();
+                    prevInput.value = '';
+                    prevInput.classList.remove('filled');
+                }
+            });
+            
+            input.addEventListener('input', function(e) {
+                if (this.value.length > 0) {
+                    this.classList.add('filled');
                 } else {
-                    document.getElementById('btn-verify').focus();
+                    this.classList.remove('filled');
                 }
-            }
-            
-            // Auto-backspace on empty field
-            if (current.value.length === 0 && current.previousElementSibling) {
-                current.previousElementSibling.focus();
-            }
+            });
+        });
+    });
+
+    // Theme toggle functionality
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = themeToggle.querySelector('i');
+    const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    // Check for saved theme preference or use system preference
+    const currentTheme = localStorage.getItem('theme');
+    if (currentTheme === 'dark' || (!currentTheme && prefersDarkScheme.matches)) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        themeIcon.classList.remove('fa-moon');
+        themeIcon.classList.add('fa-sun');
+    }
+    
+    themeToggle.addEventListener('click', function() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        if (currentTheme === 'dark') {
+            document.documentElement.removeAttribute('data-theme');
+            themeIcon.classList.remove('fa-sun');
+            themeIcon.classList.add('fa-moon');
+            localStorage.setItem('theme', 'light');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            themeIcon.classList.remove('fa-moon');
+            themeIcon.classList.add('fa-sun');
+            localStorage.setItem('theme', 'dark');
         }
-        
-        // Countdown timer
-        function startTimer(duration, display) {
-            let timer = duration, minutes, seconds;
-            const interval = setInterval(function () {
-                minutes = parseInt(timer / 60, 10);
-                seconds = parseInt(timer % 60, 10);
-                
-                minutes = minutes < 10 ? "0" + minutes : minutes;
-                seconds = seconds < 10 ? "0" + seconds : seconds;
-                
-                display.textContent = minutes + ":" + seconds;
-                
-                if (--timer < 0) {
-                    clearInterval(interval);
-                    display.textContent = "00:00";
-                    document.querySelector('.resend-link a').style.pointerEvents = 'auto';
-                    display.style.color = 'var(--danger)';
-                }
-            }, 1000);
-        }
-        
-        window.onload = function () {
-            const twoMinutes = 120; // 2 minutes in seconds
-            const display = document.querySelector('#timer');
-            startTimer(twoMinutes, display);
-            
-            // Disable resend link initially
-            document.querySelector('.resend-link a').style.pointerEvents = 'none';
-        };
-    </script>
+    });
+</script>
+
 </body>
 </html>

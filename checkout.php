@@ -172,41 +172,358 @@ if(isset($_POST['order']) && $_POST['method']=='esewa'){
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Checkout - Daraz Style</title>
+<title>Checkout - YourStore</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-    --primary:#f57224; --primary-dark:#e0611a; --dark:#212121; --light:#fff; --border:#e0e0e0; --text:#212121;
-    --success:#4CAF50; --error:#f44336; --shadow:0 2px 10px rgba(0,0,0,0.1);
+    --primary: #3498db;
+    --primary-dark: #2980b9;
+    --secondary: #f57224;
+    --secondary-dark: #e0611a;
+    --dark: #2c3e50;
+    --light: #ffffff;
+    --border: #e9ecef;
+    --text: #2c3e50;
+    --text-light: #7f8c8d;
+    --success: #27ae60;
+    --error: #e74c3c;
+    --shadow: 0 5px 15px rgba(0,0,0,0.08);
+    --radius: 12px;
 }
-body { font-family:'Roboto',sans-serif; background:#f7f7f7; margin:0; padding:0; color:var(--dark);}
-.checkout-container { max-width:1200px; margin:30px auto; display:grid; grid-template-columns:1fr; gap:30px; padding:0 15px;}
-@media(min-width:992px){ .checkout-container { grid-template-columns:2fr 1fr; } }
-.checkout-card { background:var(--light); padding:25px; border-radius:8px; box-shadow:var(--shadow);}
-.checkout-header { display:flex; align-items:center; gap:12px; margin-bottom:20px; border-bottom:1px solid var(--border); color:var(--dark);}
-.checkout-header i{ color:var(--primary); font-size:1.3rem;}
-.checkout-header h2{ margin:0; font-size:1.4rem;}
-.form-group { margin-bottom:15px; }
-.form-label{ display:block; font-weight:600; margin-bottom:5px; color:var(--dark);}
-.form-control{ width:100%; padding:10px; border:1px solid var(--border); border-radius:4px; font-size:1rem; color:var(--dark);}
-.form-control::placeholder{ color:#aaa;}
-.payment-options{ display:flex; flex-direction:column; gap:10px;}
-.payment-option{ display:flex; align-items:center; gap:10px; padding:10px; border:2px solid #e0e0e0; border-radius:8px; cursor:pointer; transition:all 0.3s; background:#fff;}
-.payment-option.active{ border-color:var(--primary); background:rgba(245,114,36,0.05);}
-.payment-option input[type="radio"]{ display:none;}
-.selection-indicator{ width:20px;height:20px;border:2px solid #ccc;border-radius:50%; display:flex; align-items:center; justify-content:center;}
-.payment-option.active .selection-indicator{ border-color:var(--primary);}
-.checkmark{ width:12px;height:12px;background:var(--primary); border-radius:50%; opacity:0;}
-.payment-option.active .checkmark{ opacity:1;}
-.btn-checkout{ background:var(--primary); color:#fff; border:none; padding:12px; border-radius:4px; width:100%; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center; gap:8px;}
-.btn-checkout:hover{ background:var(--primary-dark);}
-.order-summary{ position:sticky; top:20px;}
-.order-item{ display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed var(--border);}
-.price-row{ display:flex; justify-content:space-between; margin-bottom:8px;}
-.total-price{ font-weight:600; font-size:1.2rem;}
-.message{ padding:10px; margin-bottom:15px; border-radius:4px; display:flex; justify-content:space-between;}
-.success{ background:rgba(76,175,80,0.1); border-left:4px solid var(--success); color:var(--success);}
-.error{ background:rgba(244,67,54,0.1); border-left:4px solid var(--error); color:var(--error);}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #f8f9fa;
+    color: var(--text);
+    line-height: 1.6;
+}
+
+.checkout-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+@media (min-width: 992px) {
+    .checkout-container {
+        grid-template-columns: 2fr 1fr;
+        gap: 3rem;
+    }
+}
+
+.checkout-card {
+    background: var(--light);
+    padding: 2rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+}
+
+.checkout-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border);
+}
+
+.checkout-header i {
+    color: var(--primary);
+    font-size: 1.8rem;
+}
+
+.checkout-header h2 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--dark);
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.8rem;
+    color: var(--dark);
+    font-size: 1.1rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    font-size: 1.1rem;
+    color: var(--text);
+    font-family: 'Poppins', sans-serif;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    outline: none;
+}
+
+.form-control::placeholder {
+    color: #aaa;
+    font-size: 1rem;
+}
+
+.payment-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.payment-option {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--light);
+}
+
+.payment-option:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.payment-option.active {
+    border-color: var(--primary);
+    background: rgba(52, 152, 219, 0.05);
+    transform: translateY(-2px);
+}
+
+.payment-option input[type="radio"] {
+    display: none;
+}
+
+.option-details {
+    flex: 1;
+}
+
+.option-details span {
+    display: block;
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: var(--dark);
+    margin-bottom: 0.3rem;
+}
+
+.option-details small {
+    color: var(--text-light);
+    font-size: 1rem;
+}
+
+.selection-indicator {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #ccc;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.3s ease;
+}
+
+.payment-option.active .selection-indicator {
+    border-color: var(--primary);
+}
+
+.checkmark {
+    width: 14px;
+    height: 14px;
+    background: var(--primary);
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.payment-option.active .checkmark {
+    opacity: 1;
+}
+
+.btn-checkout {
+    background: var(--secondary);
+    color: var(--light);
+    border: none;
+    padding: 16px 24px;
+    border-radius: 8px;
+    width: 100%;
+    cursor: pointer;
+    font-size: 1.3rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.8rem;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+    font-family: 'Poppins', sans-serif;
+}
+
+.btn-checkout:hover {
+    background: var(--secondary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(245, 114, 36, 0.3);
+}
+
+.order-summary {
+    position: sticky;
+    top: 2rem;
+}
+
+.order-items {
+    margin-bottom: 1.5rem;
+    color:black;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 1.1rem;
+}
+
+.order-item:last-child {
+    border-bottom: none;
+}
+
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.total-price {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--dark);
+    padding-top: 1rem;
+    border-top: 2px solid var(--border);
+    margin-top: 1rem;
+}
+
+.message {
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.success {
+    background: rgba(39, 174, 96, 0.1);
+    border-left: 4px solid var(--success);
+    color: var(--success);
+}
+
+.error {
+    background: rgba(231, 76, 60, 0.1);
+    border-left: 4px solid var(--error);
+    color: var(--error);
+}
+
+.empty-cart {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-light);
+}
+
+.empty-cart p {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .checkout-container {
+        padding: 0 1rem;
+        gap: 1.5rem;
+    }
+    
+    .checkout-card {
+        padding: 1.5rem;
+    }
+    
+    .checkout-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .checkout-header i {
+        font-size: 1.5rem;
+    }
+    
+    .form-control {
+        padding: 12px 14px;
+        font-size: 1rem;
+    }
+    
+    .payment-option {
+        padding: 1.2rem;
+    }
+    
+    .option-details span {
+        font-size: 1.1rem;
+    }
+    
+    .btn-checkout {
+        font-size: 1.2rem;
+        padding: 14px 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .checkout-card {
+        padding: 1.2rem;
+    }
+    
+    .checkout-header {
+        gap: 0.8rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .checkout-header h2 {
+        font-size: 1.3rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.2rem;
+    }
+    
+    .form-label {
+        font-size: 1rem;
+    }
+    
+    .payment-option {
+        padding: 1rem;
+    }
+}
 </style>
 </head>
 <body>
@@ -217,81 +534,107 @@ body { font-family:'Roboto',sans-serif; background:#f7f7f7; margin:0; padding:0;
 
 <?php if(!empty($message)): ?>
     <?php foreach($message as $msg): ?>
-        <div class="message success"><?= $msg ?></div>
+        <div class="message success">
+            <span><?= $msg ?></span>
+            <i class="fas fa-check-circle"></i>
+        </div>
     <?php endforeach; ?>
 <?php endif; ?>
 
 <div class="checkout-main">
-<div class="checkout-card">
-<div class="checkout-header"><i class="fas fa-map-marker-alt"></i><h2>Delivery Address</h2></div>
-<form method="POST" id="checkoutForm">
-<div class="form-group">
-<label class="form-label">Full Name</label>
-<input type="text" name="name" class="form-control" placeholder="Enter full name" required>
-</div>
-<div class="form-group">
-<label class="form-label">Phone Number</label>
-<input type="tel" name="number" class="form-control" placeholder="Enter phone number" required>
-</div>
-<div class="form-group">
-<label class="form-label">Email</label>
-<input type="email" name="email" class="form-control" placeholder="Enter email" required>
-</div>
-<div class="form-group">
-<label class="form-label">State</label>
-<input type="text" name="state" class="form-control" placeholder="State" required>
-</div>
-<div class="form-group">
-<label class="form-label">Postal Code</label>
-<input type="text" name="pin_code" class="form-control" placeholder="Postal code" required>
-</div>
-</div>
+    <div class="checkout-card">
+        <div class="checkout-header">
+            <i class="fas fa-map-marker-alt"></i>
+            <h2>Delivery Address</h2>
+        </div>
+        <form method="POST" id="checkoutForm">
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input type="text" name="name" class="form-control" placeholder="Enter your full name" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <input type="tel" name="number" class="form-control" placeholder="Enter your phone number" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" name="email" class="form-control" placeholder="Enter your email address" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">State/Province</label>
+                <input type="text" name="state" class="form-control" placeholder="Enter your state or province" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Postal Code</label>
+                <input type="text" name="pin_code" class="form-control" placeholder="Enter your postal code" required>
+            </div>
+    </div>
 
-<div class="checkout-card">
-  <div class="checkout-header"><i class="fas fa-credit-card"></i><h2>Payment Method</h2></div>
-  <div class="payment-options">
-    <label class="payment-option active">
-      <input type="radio" name="method" value="cod" checked>
-      <div class="option-details">
-        <span style="font-weight:600; font-size:1rem; color:#212121;">Cash on Delivery</span>
-        <small style="color:#555;">Pay when you receive your order</small>
-      </div>
-      <div class="selection-indicator"><div class="checkmark"></div></div>
-    </label>
+    <div class="checkout-card">
+        <div class="checkout-header">
+            <i class="fas fa-credit-card"></i>
+            <h2>Payment Method</h2>
+        </div>
+        <div class="payment-options">
+            <label class="payment-option active">
+                <input type="radio" name="method" value="cod" checked>
+                <div class="option-details">
+                    <span>Cash on Delivery</span>
+                    <small>Pay when you receive your order</small>
+                </div>
+                <div class="selection-indicator">
+                    <div class="checkmark"></div>
+                </div>
+            </label>
 
-    <label class="payment-option">
-      <input type="radio" name="method" value="esewa">
-      <div class="option-details">
-        <span style="font-weight:600; font-size:1rem; color:#212121;">eSewa</span>
-        <small style="color:#555;">Pay securely with your eSewa account</small>
-      </div>
-      <div class="selection-indicator"><div class="checkmark"></div></div>
-    </label>
-  </div>
-</div>
-
-
+            <label class="payment-option">
+                <input type="radio" name="method" value="esewa">
+                <div class="option-details">
+                    <span>eSewa Digital Wallet</span>
+                    <small>Pay securely with your eSewa account</small>
+                </div>
+                <div class="selection-indicator">
+                    <div class="checkmark"></div>
+                </div>
+            </label>
+        </div>
+    </div>
 </div>
 
 <div class="order-summary">
-<div class="checkout-card">
-<div class="checkout-header"><i class="fas fa-shopping-bag"></i><h2>Order Summary</h2></div>
-<?php if($grand_total>0): ?>
-<?php foreach($cart_items as $item): ?>
-<div class="order-item">
-<span><?= $item; ?></span>
-</div>
-<?php endforeach; ?>
-<div class="price-row total-price">
-<span>Total:</span><span>Rs. <?= $grand_total; ?></span>
-</div>
-<input type="hidden" name="total_price" value="<?= $grand_total; ?>">
-<button type="submit" name="order" class="btn-checkout">Place Order</button>
-<?php else: ?>
-<p>Your cart is empty!</p>
-<?php endif; ?>
-</form>
-</div>
+    <div class="checkout-card">
+        <div class="checkout-header">
+            <i class="fas fa-shopping-bag"></i>
+            <h2>Your Order</h2>
+        </div>
+        <?php if($grand_total > 0): ?>
+            <div class="order-items">
+                <?php foreach($cart_items as $item): ?>
+                    <div class="order-item">
+                        <span><?= $item; ?></span>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+            <div class="price-row total-price">
+                <span>Total Amount:</span>
+                <span>Rs. <?= number_format($grand_total, 2); ?></span>
+            </div>
+            <input type="hidden" name="total_price" value="<?= $grand_total; ?>">
+            <button type="submit" name="order" class="btn-checkout">
+                <i class="fas fa-lock"></i>
+                Place Order Securely
+            </button>
+        <?php else: ?>
+            <div class="empty-cart">
+                <p>Your cart is empty!</p>
+                <a href="shop.php" class="btn-checkout" style="text-decoration: none; margin-top: 1rem;">
+                    <i class="fas fa-shopping-cart"></i>
+                    Continue Shopping
+                </a>
+            </div>
+        <?php endif; ?>
+        </form>
+    </div>
 </div>
 
 </div>
@@ -303,6 +646,26 @@ document.querySelectorAll('.payment-option').forEach(opt => {
         this.classList.add('active');
         this.querySelector('input').checked = true;
     });
+});
+
+// Form validation
+document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+    const inputs = this.querySelectorAll('input[required]');
+    let valid = true;
+    
+    inputs.forEach(input => {
+        if (!input.value.trim()) {
+            valid = false;
+            input.style.borderColor = '#e74c3c';
+        } else {
+            input.style.borderColor = '#e9ecef';
+        }
+    });
+    
+    if (!valid) {
+        e.preventDefault();
+        alert('Please fill in all required fields.');
+    }
 });
 </script>
 
